@@ -1,0 +1,67 @@
+{
+  "version": "0.1.0",
+  "name": "trustify",
+  "instructions": [
+    {
+      "name": "createTask",
+      "accounts": [
+        { "name": "task", "isMut": true, "isSigner": true },
+        { "name": "client", "isMut": true, "isSigner": true },
+        { "name": "vault", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "amount", "type": "u64" }]
+    },
+    {
+      "name": "acceptTask",
+      "accounts": [
+        { "name": "task", "isMut": true, "isSigner": false },
+        { "name": "developer", "isMut": true, "isSigner": true }
+      ],
+      "args": []
+    },
+    {
+      "name": "releaseFunds",
+      "accounts": [
+        { "name": "task", "isMut": true, "isSigner": false },
+        { "name": "developer", "isMut": true, "isSigner": false },
+        { "name": "vault", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Task",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "client", "type": "publicKey" },
+          { "name": "developer", "type": "publicKey" },
+          { "name": "amount", "type": "u64" },
+          { "name": "status", "type": { "defined": "TaskStatus" } }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "TaskStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [{ "name": "Pending" }, { "name": "Accepted" }, { "name": "Completed" }]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidStatus",
+      "msg": "Invalid task status"
+    }
+  ],
+  "metadata": {
+    "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkgU6dQvXJKDf"
+  }
+}
