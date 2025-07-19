@@ -180,6 +180,7 @@ export default function LandingPage() {
                 <Link href="#pricing" className="text-white/80 hover:text-white transition-colors">
                   Pricing
                 </Link>
+                
                 <div className="flex flex-col space-y-2 pt-4">
                   <Button
                     variant="outline"

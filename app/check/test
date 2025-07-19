@@ -1,0 +1,192 @@
+// 'use client'
+
+// import { useEffect, useRef } from 'react'
+
+// export default function Home() {
+//   const containerRef = useRef<HTMLDivElement>(null)
+
+//   useEffect(() => {
+//     let THREE: any
+//     let GLTFLoader: any
+//     let gsap: any
+//     let scene: any
+//     let camera: any
+//     let renderer: any
+//     let armorModel: any
+//     let mixer: any
+//     let rotationStarted = false
+
+//     const initThreeJS = async () => {
+//       const [threeModule, gltfModule, gsapModule] = await Promise.all([
+//         import('three'),
+//         import('three/examples/jsm/loaders/GLTFLoader'),
+//         import('gsap')
+//       ])
+
+//       THREE = threeModule
+//       GLTFLoader = gltfModule.GLTFLoader
+//       gsap = gsapModule.gsap
+
+//       // Scene and camera
+//       scene = new THREE.Scene()
+//       camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
+//       camera.position.set(0, 0, -4) // Initial back shot
+
+//       // Renderer
+//       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+//       renderer.setSize(window.innerWidth, window.innerHeight)
+//       renderer.setPixelRatio(window.devicePixelRatio)
+//       renderer.setClearColor(0x000000, 1)
+//       if (containerRef.current) containerRef.current.appendChild(renderer.domElement)
+
+//       // Lights
+//       scene.add(new THREE.AmbientLight(0xffffff, 0.6))
+//       const dirLight = new THREE.DirectionalLight(0xffffff, 1)
+//       dirLight.position.set(5, 10, 7)
+//       scene.add(dirLight)
+
+//       // Load model
+//       const loader = new GLTFLoader()
+//       loader.load(
+//         '/models/sci-fi_armor.glb',
+//         gltf => {
+//           armorModel = gltf.scene
+
+//           // Properly center model
+//           const box = new THREE.Box3().setFromObject(armorModel)
+//           const center = box.getCenter(new THREE.Vector3())
+//           armorModel.position.sub(center) // Centering
+
+//           const size = box.getSize(new THREE.Vector3())
+//           const scale = 2 / Math.max(size.x, size.y, size.z)
+//           armorModel.scale.setScalar(scale)
+
+//           scene.add(armorModel)
+
+//           // Animations
+//           if (gltf.animations.length > 0) {
+//             mixer = new THREE.AnimationMixer(armorModel)
+//             mixer.clipAction(gltf.animations[0]).play()
+//           }
+
+//           handleScroll() // trigger scroll-based motion
+//         }
+//       )
+
+//       // Camera positions (cinematic angles)
+//       const cameraPath = [
+//         { pos: { x: 0, y: 0, z: -3 }, look: { x: 0, y: 0, z: 0 }, fov: 50 }, // Back view
+//         { pos: { x: 1.5, y: 1.2, z: 2 }, look: { x: 0, y: 1, z: 0 }, fov: 38 }, // Shoulder
+//         { pos: { x: 0, y: 0.5, z: 1.6 }, look: { x: 0, y: 0.4, z: 0 }, fov: 32 }, // Chest
+//         { pos: { x: -1.2, y: -0.3, z: 1.8 }, look: { x: 0, y: -0.2, z: 0 }, fov: 34 }, // Abs
+//         { pos: { x: 1.2, y: -1, z: 2.2 }, look: { x: 0, y: -0.8, z: 0 }, fov: 36 }, // Thigh
+//         { pos: { x: 0, y: 0.2, z: 6 }, look: { x: 0, y: 0, z: 0 }, fov: 60 } // Final full-body shot
+//       ]
+
+//       const handleScroll = () => {
+//         if (!armorModel) return
+
+//         const scrollY = window.scrollY
+//         const scrollHeight = document.body.scrollHeight - window.innerHeight
+//         const scrollPercent = scrollY / scrollHeight
+
+//         const totalSections = cameraPath.length - 1
+//         const section = Math.floor(scrollPercent * totalSections)
+//         const progress = (scrollPercent * totalSections) - section
+
+//         const current = cameraPath[section]
+//         const next = cameraPath[Math.min(section + 1, totalSections)]
+
+//         // Trigger final rotation
+//         rotationStarted = scrollPercent > 0.95
+
+//         gsap.to(camera.position, {
+//           x: THREE.MathUtils.lerp(current.pos.x, next.pos.x, progress),
+//           y: THREE.MathUtils.lerp(current.pos.y, next.pos.y, progress),
+//           z: THREE.MathUtils.lerp(current.pos.z, next.pos.z, progress),
+//           duration: 0.3,
+//           ease: 'power2.out'
+//         })
+
+//         const lookAt = new THREE.Vector3(
+//           THREE.MathUtils.lerp(current.look.x, next.look.x, progress),
+//           THREE.MathUtils.lerp(current.look.y, next.look.y, progress),
+//           THREE.MathUtils.lerp(current.look.z, next.look.z, progress)
+//         )
+
+//         gsap.to({}, {
+//           duration: 0.3,
+//           ease: 'power2.out',
+//           onUpdate: () => {
+//             camera.lookAt(lookAt)
+//           }
+//         })
+
+//         gsap.to(camera, {
+//           fov: THREE.MathUtils.lerp(current.fov, next.fov, progress),
+//           duration: 0.3,
+//           ease: 'power2.out',
+//           onUpdate: () => {
+//             camera.updateProjectionMatrix()
+//           }
+//         })
+//       }
+
+//       // Re-render and animate
+//       const animate = () => {
+//         requestAnimationFrame(animate)
+//         if (mixer) mixer.update(0.02)
+//         if (rotationStarted && armorModel) {
+//           armorModel.rotation.y += 0.005
+//         }
+//         renderer.render(scene, camera)
+//       }
+
+//       const resize = () => {
+//         camera.aspect = window.innerWidth / window.innerHeight
+//         camera.updateProjectionMatrix()
+//         renderer.setSize(window.innerWidth, window.innerHeight)
+//       }
+
+//       window.addEventListener('scroll', handleScroll)
+//       window.addEventListener('resize', resize)
+//       animate()
+//     }
+
+//     initThreeJS()
+//   }, [])
+
+//   return (
+//     <div className="relative">
+//       {/* 3D Scene */}
+//       <div ref={containerRef} className="fixed inset-0 z-10" />
+
+//       {/* Scrollable content for scroll-trigger */}
+//       <div className="relative z-20 pointer-events-none">
+//         <div className="h-screen" /> {/* Back */}
+//         <div className="h-screen" /> {/* Shoulder */}
+//         <div className="h-screen" /> {/* Chest */}
+//         <div className="h-screen" /> {/* Abs */}
+//         <div className="h-screen" /> {/* Thigh */}
+//         <div className="h-screen" /> {/* Full body */}
+//       </div>
+
+//       <style jsx global>{`
+//         * {
+//           margin: 0;
+//           padding: 0;
+//           box-sizing: border-box;
+//         }
+
+//         body {
+//           background-color: #000;
+//           overflow-x: hidden;
+//         }
+
+//         *::-webkit-scrollbar {
+//           display: none;
+//         }
+//       `}</style>
+//     </div>
+//   )
+// }
