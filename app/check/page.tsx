@@ -118,7 +118,7 @@ export default function ArmorShowcase() {
       try {
         scene = new THREE.Scene()
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
-        camera.position.set(0, 0, -4)
+        camera.position.set(0, 0, -3)
 
         renderer = new THREE.WebGLRenderer({
           antialias: true,
@@ -350,10 +350,10 @@ export default function ArmorShowcase() {
               mixer.clipAction(gltf.animations[0]).play()
             }
           },
-          (progress) => {
+          (progress: { loaded: number; total: number }) => {
             console.log("Loading progress:", (progress.loaded / progress.total) * 100 + "%")
           },
-          (error) => {
+          (error: any) => {
             console.error("Error loading model:", error)
             // Create a fallback armor-like shape
             const group = new THREE.Group()
@@ -471,11 +471,19 @@ export default function ArmorShowcase() {
             }
 
             // Apply effects to both title and subtitle
-            titleMesh.material.opacity = titleOpacity
+            if (!Array.isArray(titleMesh.material)) {
+              titleMesh.material.opacity = titleOpacity
+            }
             titleMesh.scale.setScalar(titleScale)
 
             const subtitleOpacity = scrollPercent <= 0.7 ? titleOpacity * 0.8 : titleOpacity * 0.9
-            subtitleMesh.material.opacity = subtitleOpacity
+            if (Array.isArray(subtitleMesh.material)) {
+              subtitleMesh.material.forEach((mat) => {
+                mat.opacity = subtitleOpacity
+              })
+            } else {
+              subtitleMesh.material.opacity = subtitleOpacity
+            }
             subtitleMesh.scale.setScalar(titleScale * 0.8)
           }
 
@@ -486,8 +494,16 @@ export default function ArmorShowcase() {
             }
 
             // Fade grid based on scroll
-            if (element.material && element.material.opacity !== undefined) {
-              element.material.opacity = 0.1 * (1 - scrollPercent * 0.5)
+            if (element.material) {
+              if (Array.isArray(element.material)) {
+                element.material.forEach((mat) => {
+                  if ('opacity' in mat) {
+                    mat.opacity = 0.1 * (1 - scrollPercent * 0.5)
+                  }
+                })
+              } else if ('opacity' in element.material) {
+                element.material.opacity = 0.1 * (1 - scrollPercent * 0.5)
+              }
             }
           })
 
@@ -501,7 +517,19 @@ export default function ArmorShowcase() {
             particle.position.x = particle.userData.originalPosition.x + Math.cos(particle.userData.phase * 0.7) * 1
 
             // Color cycling
-            particle.material.color.setHSL((time * 0.1 + index * 0.1) % 1, 0.8, 0.5 + Math.sin(time * 2 + index) * 0.2)
+            if (Array.isArray(particle.material)) {
+              particle.material.forEach((mat) => {
+                if ('color' in mat) {
+                  mat.color.setHSL((time * 0.1 + index * 0.1) % 1, 0.8, 0.5 + Math.sin(time * 2 + index) * 0.2)
+                }
+              })
+            } else if ('color' in particle.material) {
+              (particle.material as THREE.Material & { color: THREE.Color }).color.setHSL(
+                (time * 0.1 + index * 0.1) % 1,
+                0.8,
+                0.5 + Math.sin(time * 2 + index) * 0.2
+              )
+            }
 
             // Opacity based on scroll
             particle.material.opacity = 0.7 * (1 - scrollPercent * 0.3)

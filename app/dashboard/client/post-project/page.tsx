@@ -120,31 +120,33 @@ export default function PostProjectPage() {
   }
 
   const handleSubmit = async () => {
-    if (!connected || !publicKey) {
+    if (!connected || !publicKey || !wallet) {
       alert("Please connect your Phantom wallet first!")
       return
     }
-
+  
     setIsSubmitting(true)
     try {
-      // Create task on Solana blockchain
-      const taskId = await createTask(Number.parseFloat(projectData.budget), {
-        publicKey,
-        signTransaction: wallet?.adapter.signTransaction,
-        signAllTransactions: wallet?.adapter.signAllTransactions,
-        connected,
-      })
-
+      // Create proper wallet object for Anchor
+      const walletAdapter = {
+        publicKey: publicKey,
+        signTransaction: wallet.adapter.signTransaction?.bind(wallet.adapter),
+        signAllTransactions: wallet.adapter.signAllTransactions?.bind(wallet.adapter),
+      }
+  
+      // Create task on Solana blockchain using total milestone budget
+      const taskId = await createTask(totalBudget, walletAdapter)
+  
       console.log("Task created on blockchain:", taskId)
-
+  
       // Here you would also save to your database
       // await saveProjectToDatabase({ ...projectData, taskId })
-
+  
       alert("Project posted successfully on blockchain!")
       router.push("/dashboard/client")
     } catch (error) {
       console.error("Error creating project:", error)
-      alert("Failed to create project. Please try again.")
+      alert(`Failed to create project: ${error.message || error}`)
     } finally {
       setIsSubmitting(false)
     }
