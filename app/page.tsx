@@ -40,7 +40,7 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
@@ -97,16 +97,6 @@ export default function LandingPage() {
                 Home
               </Link>
               <Link
-                href="#how-it-works"
-                className="text-white/80 hover:text-white transition-colors"
-                onClick={(e) => {
-                  e.preventDefault()
-                  document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })
-                }}
-              >
-                How It Works
-              </Link>
-              <Link
                 href="#features"
                 className="text-white/80 hover:text-white transition-colors"
                 onClick={(e) => {
@@ -115,6 +105,16 @@ export default function LandingPage() {
                 }}
               >
                 Features
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="text-white/80 hover:text-white transition-colors"
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })
+                }}
+              >
+                How It Works
               </Link>
               <Link
                 href="#pricing"

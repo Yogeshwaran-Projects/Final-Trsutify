@@ -199,7 +199,7 @@ export default function FreelancerDashboard() {
               <div className="space-y-6">
                 {/* Welcome */}
                 <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">Welcome back, Alex!</h1>
+                  <h1 className="text-3xl font-bold text-white mb-2">Welcome back, XYZ!</h1>
                   <p className="text-white/80">Ready to find your next great project?</p>
                 </div>
 
