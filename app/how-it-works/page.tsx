@@ -13,7 +13,7 @@ interface AnnotationPoint {
   gradientId: string
   scrollRange: { start: number; end: number }
 }
-
+//
 const annotations: AnnotationPoint[] = [
   {
     id: "head",
