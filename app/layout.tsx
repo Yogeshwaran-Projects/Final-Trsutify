@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Trustify - Blockchain-Powered Freelancing",
   description: "Secure contracts, escrow protection, milestone payments",
-    generator: 'v0.dev'
+    generator: ''
 }
 
 export default function RootLayout({
