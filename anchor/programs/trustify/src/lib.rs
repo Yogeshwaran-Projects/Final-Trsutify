@@ -32,7 +32,7 @@ pub mod trustify {
             ),
             amount,
         )?;
-
+        //check
         // Now initialize the escrow account
         let escrow = &mut ctx.accounts.escrow;
         escrow.client = client_key;
