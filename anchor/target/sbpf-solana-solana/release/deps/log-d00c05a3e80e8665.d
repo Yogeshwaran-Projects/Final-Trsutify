@@ -1,0 +1,10 @@
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/sbpf-solana-solana/release/deps/liblog-d00c05a3e80e8665.rmeta: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/macros.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/serde.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/__private_api.rs
+
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/sbpf-solana-solana/release/deps/liblog-d00c05a3e80e8665.rlib: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/macros.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/serde.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/__private_api.rs
+
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/sbpf-solana-solana/release/deps/log-d00c05a3e80e8665.d: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/macros.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/serde.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/__private_api.rs
+
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/lib.rs:
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/macros.rs:
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/serde.rs:
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/log-0.4.29/src/__private_api.rs:

@@ -3,65 +3,156 @@
   "name": "trustify",
   "instructions": [
     {
-      "name": "createTask",
+      "name": "createEscrow",
       "accounts": [
-        { "name": "task", "isMut": true, "isSigner": true },
+        { "name": "escrow", "isMut": true, "isSigner": false },
         { "name": "client", "isMut": true, "isSigner": true },
-        { "name": "vault", "isMut": true, "isSigner": false },
         { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
-      "args": [{ "name": "amount", "type": "u64" }]
+      "args": [
+        { "name": "amount", "type": "u64" },
+        { "name": "description", "type": "string" },
+        { "name": "escrowId", "type": "u64" }
+      ]
     },
     {
-      "name": "acceptTask",
+      "name": "acceptEscrow",
       "accounts": [
-        { "name": "task", "isMut": true, "isSigner": false },
-        { "name": "developer", "isMut": true, "isSigner": true }
+        { "name": "escrow", "isMut": true, "isSigner": false },
+        { "name": "freelancer", "isMut": true, "isSigner": true }
+      ],
+      "args": []
+    },
+    {
+      "name": "submitWork",
+      "accounts": [
+        { "name": "escrow", "isMut": true, "isSigner": false },
+        { "name": "freelancer", "isMut": true, "isSigner": true }
       ],
       "args": []
     },
     {
       "name": "releaseFunds",
       "accounts": [
-        { "name": "task", "isMut": true, "isSigner": false },
-        { "name": "developer", "isMut": true, "isSigner": false },
-        { "name": "vault", "isMut": true, "isSigner": false },
+        { "name": "escrow", "isMut": true, "isSigner": false },
+        { "name": "client", "isMut": true, "isSigner": true },
+        { "name": "freelancer", "isMut": true, "isSigner": false },
         { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancelEscrow",
+      "accounts": [
+        { "name": "escrow", "isMut": true, "isSigner": false },
+        { "name": "client", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "raiseDispute",
+      "accounts": [
+        { "name": "escrow", "isMut": true, "isSigner": false },
+        { "name": "caller", "isMut": true, "isSigner": true }
       ],
       "args": []
     }
   ],
   "accounts": [
     {
-      "name": "Task",
+      "name": "Escrow",
       "type": {
         "kind": "struct",
         "fields": [
           { "name": "client", "type": "publicKey" },
-          { "name": "developer", "type": "publicKey" },
+          { "name": "freelancer", "type": "publicKey" },
           { "name": "amount", "type": "u64" },
-          { "name": "status", "type": { "defined": "TaskStatus" } }
+          { "name": "status", "type": { "defined": "EscrowStatus" } },
+          { "name": "escrowId", "type": "u64" },
+          { "name": "createdAt", "type": "i64" },
+          { "name": "description", "type": "string" },
+          { "name": "bump", "type": "u8" }
         ]
       }
     }
   ],
   "types": [
     {
-      "name": "TaskStatus",
+      "name": "EscrowStatus",
       "type": {
         "kind": "enum",
-        "variants": [{ "name": "Pending" }, { "name": "Accepted" }, { "name": "Completed" }]
+        "variants": [
+          { "name": "Open" },
+          { "name": "InProgress" },
+          { "name": "Submitted" },
+          { "name": "Completed" },
+          { "name": "Cancelled" },
+          { "name": "Disputed" }
+        ]
       }
     }
   ],
-  "errors": [
+  "events": [
     {
-      "code": 6000,
-      "name": "InvalidStatus",
-      "msg": "Invalid task status"
+      "name": "EscrowCreated",
+      "fields": [
+        { "name": "escrow", "type": "publicKey", "index": false },
+        { "name": "client", "type": "publicKey", "index": false },
+        { "name": "amount", "type": "u64", "index": false },
+        { "name": "description", "type": "string", "index": false }
+      ]
+    },
+    {
+      "name": "EscrowAccepted",
+      "fields": [
+        { "name": "escrow", "type": "publicKey", "index": false },
+        { "name": "freelancer", "type": "publicKey", "index": false }
+      ]
+    },
+    {
+      "name": "WorkSubmitted",
+      "fields": [
+        { "name": "escrow", "type": "publicKey", "index": false },
+        { "name": "freelancer", "type": "publicKey", "index": false }
+      ]
+    },
+    {
+      "name": "FundsReleased",
+      "fields": [
+        { "name": "escrow", "type": "publicKey", "index": false },
+        { "name": "freelancer", "type": "publicKey", "index": false },
+        { "name": "amount", "type": "u64", "index": false }
+      ]
+    },
+    {
+      "name": "EscrowCancelled",
+      "fields": [
+        { "name": "escrow", "type": "publicKey", "index": false },
+        { "name": "client", "type": "publicKey", "index": false },
+        { "name": "refundedAmount", "type": "u64", "index": false }
+      ]
+    },
+    {
+      "name": "DisputeRaised",
+      "fields": [
+        { "name": "escrow", "type": "publicKey", "index": false },
+        { "name": "raisedBy", "type": "publicKey", "index": false }
+      ]
     }
   ],
+  "errors": [
+    { "code": 6000, "name": "InvalidAmount", "msg": "Invalid escrow amount - must be greater than 0" },
+    { "code": 6001, "name": "DescriptionTooLong", "msg": "Description too long - max 200 characters" },
+    { "code": 6002, "name": "InvalidStatus", "msg": "Invalid escrow status for this operation" },
+    { "code": 6003, "name": "ClientCannotBeFreelancer", "msg": "Client cannot be the freelancer" },
+    { "code": 6004, "name": "UnauthorizedFreelancer", "msg": "Unauthorized - only the freelancer can perform this action" },
+    { "code": 6005, "name": "UnauthorizedClient", "msg": "Unauthorized - only the client can perform this action" },
+    { "code": 6006, "name": "InvalidFreelancer", "msg": "Invalid freelancer address" },
+    { "code": 6007, "name": "CannotCancelInProgress", "msg": "Cannot cancel escrow that is already in progress" },
+    { "code": 6008, "name": "UnauthorizedCaller", "msg": "Unauthorized caller for this operation" }
+  ],
   "metadata": {
-    "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkgU6dQvXJKDf"
+    "address": "GwMcGoxFd3ExF1QPA7qF9CjuN1ot4cMhTp5DyFs6z66R"
   }
 }

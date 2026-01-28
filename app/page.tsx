@@ -4,523 +4,507 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
-  Shield,
-  Coins,
-  Target,
-  Users,
-  ChevronRight,
+  ArrowRight,
+  Play,
+  Terminal,
+  ExternalLink,
+  Check,
+  Copy,
   Menu,
   X,
-  Smartphone,
-  CheckCircle,
-  ArrowRight,
-  Zap,
-  Lock,
-  TrendingUp,
 } from "lucide-react"
 
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [animatedNodes, setAnimatedNodes] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([])
-
+  const [copied, setCopied] = useState(false)
+  const [terminalStep, setTerminalStep] = useState(0)
   const router = useRouter()
 
+  const contractAddress = "GwMcGoxFd3ExF1QPA7qF9CjuN1ot4cMhTp5DyFs6z66R"
+
+  const copyAddress = () => {
+    navigator.clipboard.writeText(contractAddress)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  // Terminal animation
   useEffect(() => {
-    // Generate floating blockchain nodes for background animation
-    const nodes = Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 2,
-    }))
-    setAnimatedNodes(nodes)
+    const interval = setInterval(() => {
+      setTerminalStep((prev) => (prev + 1) % 8)
+    }, 2000)
+    return () => clearInterval(interval)
   }, [])
 
+  const terminalLines = [
+    { cmd: true, text: "$ trustify create-escrow --amount 2.5 --to 7xKp..." },
+    { cmd: false, text: "Deriving PDA..." },
+    { cmd: false, text: "✓ Escrow created at 4nFv...8kLm" },
+    { cmd: false, text: "✓ 2.5 SOL locked in vault" },
+    { cmd: true, text: "$ trustify release --escrow 4nFv...8kLm" },
+    { cmd: false, text: "Validating work submission..." },
+    { cmd: false, text: "✓ Transferring 2.5 SOL to freelancer" },
+    { cmd: false, text: "✓ Escrow closed. Transaction complete." },
+  ]
+
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
-        {animatedNodes.map((node) => (
-          <div
-            key={node.id}
-            className="absolute w-2 h-2 bg-purple-400/30 rounded-full animate-pulse"
-            style={{
-              left: `${node.x}%`,
-              top: `${node.y}%`,
-              animationDelay: `${node.delay}s`,
-            }}
-          />
-        ))}
-        {/* Connecting lines */}
-        <svg className="absolute inset-0 w-full h-full">
-          {animatedNodes.slice(0, 4).map((node, i) => (
-            <line
-              key={i}
-              x1={`${node.x}%`}
-              y1={`${node.y}%`}
-              x2={`${animatedNodes[(i + 1) % 4]?.x}%`}
-              y2={`${animatedNodes[(i + 1) % 4]?.y}%`}
-              stroke="rgba(168, 85, 247, 0.1)"
-              strokeWidth="1"
-              className="animate-pulse"
-            />
-          ))}
-        </svg>
-      </div>
+    <div className="min-h-screen bg-[#09090b] text-white overflow-x-hidden">
+      {/* Gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-b from-neutral-900/50 via-transparent to-transparent pointer-events-none" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-radial from-blue-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
 
-      {/* Header/Navigation */}
-      <header className="relative z-50 border-b border-white/10 bg-black/20 backdrop-blur-md">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#09090b]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+                <span className="text-black font-bold text-sm">T</span>
               </div>
-              <span className="text-2xl font-bold text-white">Trustify</span>
-            </div>
+              <span className="font-semibold text-lg">Trustify</span>
+            </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link
-                href="#home"
-                className="text-white/80 hover:text-white transition-colors"
-                onClick={(e) => {
-                  e.preventDefault()
-                  document.getElementById("home")?.scrollIntoView({ behavior: "smooth" })
-                }}
-              >
-                Home
-              </Link>
-              <Link
-                href="#features"
-                className="text-white/80 hover:text-white transition-colors"
-                onClick={(e) => {
-                  e.preventDefault()
-                  document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })
-                }}
-              >
-                Features
-              </Link>
-              <Link
-                href="#how-it-works"
-                className="text-white/80 hover:text-white transition-colors"
-                onClick={(e) => {
-                  e.preventDefault()
-                  document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })
-                }}
-              >
-                How It Works
-              </Link>
-              <Link
-                href="#pricing"
-                className="text-white/80 hover:text-white transition-colors"
-                onClick={(e) => {
-                  e.preventDefault()
-                  document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
-                }}
-              >
-                Pricing
-              </Link>
+            <nav className="hidden md:flex items-center gap-1">
+              {["How it works", "Features", "Docs"].map((item) => (
+                <Link
+                  key={item}
+                  href={`#${item.toLowerCase().replace(" ", "-")}`}
+                  className="px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors"
+                >
+                  {item}
+                </Link>
+              ))}
             </nav>
 
-            {/* Desktop Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center gap-3">
               <Button
                 variant="ghost"
-                className="text-white hover:bg-white/10"
-                onClick={() => window.open("https://apps.apple.com", "_blank")}
+                size="sm"
+                className="text-neutral-400 hover:text-white"
+                onClick={() => router.push("/demo")}
               >
-                <Smartphone className="w-4 h-4 mr-2" />
-                Download App
+                Demo
               </Button>
               <Button
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-                onClick={() => router.push("/auth/signin")}
+                size="sm"
+                className="bg-white text-black hover:bg-neutral-200 font-medium"
+                onClick={() => router.push("/dashboard/client")}
               >
-                Sign In
-              </Button>
-              <Button
-                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                onClick={() => router.push("/auth/signup")}
-              >
-                Sign Up
+                Launch App
+                <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
 
-            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden text-white"
+              className="md:hidden"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
-
-          {/* Mobile Menu */}
-          {isMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-white/10">
-              <nav className="flex flex-col space-y-4 mt-4">
-                <Link href="#home" className="text-white/80 hover:text-white transition-colors">
-                  Home
-                </Link>
-                <Link href="#how-it-works" className="text-white/80 hover:text-white transition-colors">
-                  How It Works
-                </Link>
-                <Link href="#features" className="text-white/80 hover:text-white transition-colors">
-                  Features
-                </Link>
-                <Link href="#pricing" className="text-white/80 hover:text-white transition-colors">
-                  Pricing
-                </Link>
-                
-                <div className="flex flex-col space-y-2 pt-4">
-                  <Button
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-                    onClick={() => router.push("/auth/signin")}
-                  >
-                    Sign In
-                  </Button>
-                  <Button
-                    className="bg-gradient-to-r from-purple-500 to-blue-500"
-                    onClick={() => router.push("/auth/signup")}
-                  >
-                    Sign Up
-                  </Button>
-                </div>
-              </nav>
-            </div>
-          )}
         </div>
+
+        {/* Mobile menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-white/5 bg-[#09090b]">
+            <div className="px-6 py-4 space-y-4">
+              <Link href="#how-it-works" className="block text-neutral-400">How it works</Link>
+              <Link href="#features" className="block text-neutral-400">Features</Link>
+              <div className="pt-4 border-t border-white/5 space-y-2">
+                <Button variant="outline" className="w-full" onClick={() => router.push("/demo")}>Demo</Button>
+                <Button className="w-full bg-white text-black" onClick={() => router.push("/dashboard/client")}>Launch App</Button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Hero Section */}
-      <section id="home" className="relative z-10 pt-20 pb-32">
-        <div className="container mx-auto px-4 text-center">
-          <Badge className="mb-6 bg-purple-500/20 text-purple-300 border-purple-500/30">
-            <Zap className="w-4 h-4 mr-1" />
-            Powered by Blockchain Technology
-          </Badge>
+      {/* Hero */}
+      <section className="pt-32 md:pt-40 pb-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-3xl">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm mb-8">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-neutral-300">Live on Solana Devnet</span>
+              <ArrowRight className="w-3 h-3 text-neutral-500" />
+            </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Trustify
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-              Blockchain-Powered Freelancing
-            </span>
-          </h1>
+            {/* Headline */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
+              Payments secured by{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-neutral-500">
+                smart contracts
+              </span>
+              <span className="text-neutral-500">,</span>
+              <br />
+              <span className="text-neutral-500">not promises.</span>
+            </h1>
 
-          <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Secure contracts, escrow protection, milestone payments. Experience the future of freelancing with
-            transparent, trustless transactions.
-          </p>
+            {/* Subheadline */}
+            <p className="text-lg md:text-xl text-neutral-400 leading-relaxed mb-10 max-w-2xl">
+              Trustify is a decentralized escrow protocol on Solana. Funds are locked in a smart contract until work is verified. No intermediaries. No fees. Just code.
+            </p>
 
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-12 max-w-2xl mx-auto border border-white/10">
-            <p className="text-white/90 mb-4 font-medium">Revolutionary blockchain benefits:</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-center text-green-400">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Immutable Contracts
-              </div>
-              <div className="flex items-center text-green-400">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Automated Escrow
-              </div>
-              <div className="flex items-center text-green-400">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Global Payments
-              </div>
+            {/* CTA */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                size="lg"
+                className="bg-white text-black hover:bg-neutral-200 h-12 px-6 font-medium text-base"
+                onClick={() => router.push("/demo")}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Watch Demo
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 text-white font-medium text-base"
+                onClick={() => router.push("/dashboard/client")}
+              >
+                Start Building
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            {/* Contract address */}
+            <div className="mt-10 flex items-center gap-3">
+              <span className="text-sm text-neutral-500">Program ID:</span>
+              <button
+                onClick={copyAddress}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-colors group"
+              >
+                <code className="text-sm text-neutral-300 font-mono">
+                  {contractAddress.slice(0, 8)}...{contractAddress.slice(-8)}
+                </code>
+                {copied ? (
+                  <Check className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4 text-neutral-500 group-hover:text-white transition-colors" />
+                )}
+              </button>
+              <a
+                href={`https://explorer.solana.com/address/${contractAddress}?cluster=devnet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-neutral-500 hover:text-white transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Dual CTA */}
-          <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-16">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-lg px-8 py-6 h-auto"
-              onClick={() => router.push("/auth/signup")}
-            >
-              Post a Project
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 text-lg px-8 py-6 h-auto bg-transparent"
-              onClick={() => router.push("/auth/signup")}
-            >
-              Find Work
-              <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
+      {/* Terminal Preview */}
+      <section className="px-6 pb-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="relative rounded-2xl border border-white/10 bg-[#0c0c0e] overflow-hidden">
+            {/* Terminal header */}
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-white/10" />
+                <div className="w-3 h-3 rounded-full bg-white/10" />
+                <div className="w-3 h-3 rounded-full bg-white/10" />
+              </div>
+              <div className="flex-1 flex justify-center">
+                <div className="flex items-center gap-2 text-xs text-neutral-500">
+                  <Terminal className="w-3 h-3" />
+                  trustify-cli — zsh
+                </div>
+              </div>
+            </div>
+
+            {/* Terminal content */}
+            <div className="p-6 font-mono text-sm min-h-[280px]">
+              {terminalLines.slice(0, terminalStep + 1).map((line, i) => (
+                <div
+                  key={i}
+                  className={`${line.cmd ? "text-white" : "text-neutral-500"} ${
+                    i === terminalStep ? "animate-pulse" : ""
+                  }`}
+                >
+                  {line.text}
+                </div>
+              ))}
+              <span className="inline-block w-2 h-4 bg-white/70 animate-pulse ml-1" />
+            </div>
+
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-transparent pointer-events-none" />
           </div>
         </div>
       </section>
 
-      {/* Features Overview */}
-      <section id="features" className="relative z-10 py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Platform Features</h2>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Built on blockchain technology for maximum security and transparency
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Smart Contracts */}
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 group">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Smart Contracts</h3>
-                <p className="text-white/80 leading-relaxed">
-                  Automated agreement execution with built-in dispute resolution and transparent terms that execute
-                  automatically when conditions are met.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Escrow Protection */}
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 group">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Lock className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Escrow Protection</h3>
-                <p className="text-white/80 leading-relaxed">
-                  Funds held securely until work completion with automatic release upon milestone achievement and
-                  dispute protection for both parties.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Milestone Tracking */}
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 group">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Target className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Milestone Tracking</h3>
-                <p className="text-white/80 leading-relaxed">
-                  Step-by-step progress monitoring with automated payments upon completion and real-time project status
-                  updates.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Reputation System */}
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 group">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Reputation System</h3>
-                <p className="text-white/80 leading-relaxed">
-                  Blockchain-based trust scores that are immutable and transparent, building genuine reputation over
-                  time.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Global Payments */}
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 group">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Coins className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Global Payments</h3>
-                <p className="text-white/80 leading-relaxed">
-                  Cryptocurrency and fiat support with instant cross-border transactions and minimal fees.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Community */}
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 group">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-4">Global Community</h3>
-                <p className="text-white/80 leading-relaxed">
-                  Connect with talented freelancers and clients worldwide in a trusted, decentralized marketplace.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section id="how-it-works" className="relative z-10 py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">How It Works</h2>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Simple 4-step process from project posting to completion
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Stats */}
+      <section className="px-6 py-16 border-y border-white/5">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
-              {
-                step: "01",
-                title: "Post Project",
-                description: "Create detailed project requirements with smart contract terms and milestone setup",
-                icon: <Target className="w-8 h-8" />,
-              },
-              {
-                step: "02",
-                title: "Receive Proposals",
-                description: "Review freelancer bids and select the best match based on skills and reputation",
-                icon: <Users className="w-8 h-8" />,
-              },
-              {
-                step: "03",
-                title: "Work & Track",
-                description: "Collaborate in secure workspace with milestone tracking and escrow protection",
-                icon: <Shield className="w-8 h-8" />,
-              },
-              {
-                step: "04",
-                title: "Complete & Pay",
-                description: "Automatic payment release upon milestone completion with reputation updates",
-                icon: <Coins className="w-8 h-8" />,
-              },
-            ].map((item, index) => (
-              <div key={index} className="text-center group">
-                <div className="relative mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <div className="text-white">{item.icon}</div>
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
-                    <span className="text-sm font-bold text-white">{item.step}</span>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                <p className="text-white/80 text-sm leading-relaxed">{item.description}</p>
+              { value: "~$0.00025", label: "Per transaction" },
+              { value: "<400ms", label: "Finality" },
+              { value: "0%", label: "Platform fee" },
+              { value: "100%", label: "Non-custodial" },
+            ].map((stat, i) => (
+              <div key={i} className="text-center md:text-left">
+                <div className="text-2xl md:text-3xl font-bold tracking-tight mb-1">{stat.value}</div>
+                <div className="text-sm text-neutral-500">{stat.label}</div>
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center mt-12">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-              onClick={() => router.push("/how-it-works")}
-            >
-              Learn More About Our Process
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+      {/* How it works */}
+      <section id="how-it-works" className="px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-2xl mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              How it works
+            </h2>
+            <p className="text-lg text-neutral-400">
+              A simple four-step process. Funds are secured by Solana smart contracts, not third parties.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                step: "01",
+                title: "Create escrow",
+                desc: "Client locks SOL in a program-derived address. Only the smart contract can access these funds.",
+              },
+              {
+                step: "02",
+                title: "Accept job",
+                desc: "Freelancer reviews terms and accepts. The escrow status updates on-chain.",
+              },
+              {
+                step: "03",
+                title: "Submit work",
+                desc: "Freelancer completes the work and submits proof. The escrow moves to review status.",
+              },
+              {
+                step: "04",
+                title: "Release funds",
+                desc: "Client approves the work. Funds transfer instantly to the freelancer. Done.",
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="group relative p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all"
+              >
+                <div className="text-xs font-mono text-neutral-600 mb-4">{item.step}</div>
+                <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                <p className="text-sm text-neutral-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features - Bento Grid */}
+      <section id="features" className="px-6 py-24 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-2xl mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              Built different
+            </h2>
+            <p className="text-lg text-neutral-400">
+              No middlemen. No custody. No trust required.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Large card */}
+            <div className="md:col-span-2 p-8 rounded-2xl bg-gradient-to-br from-white/[0.05] to-transparent border border-white/5">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Program Derived Addresses</h3>
+              <p className="text-neutral-400 leading-relaxed">
+                Funds are held in PDAs — deterministic addresses controlled entirely by the smart contract. No private keys. No custodians. Just cryptographic guarantees.
+              </p>
+            </div>
+
+            {/* Small cards */}
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h3 className="font-semibold mb-1">Instant settlement</h3>
+              <p className="text-sm text-neutral-500">Funds transfer in under a second. No holds.</p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h3 className="font-semibold mb-1">Access control</h3>
+              <p className="text-sm text-neutral-500">Role-based permissions enforced on-chain.</p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </div>
+              <h3 className="font-semibold mb-1">Borderless</h3>
+              <p className="text-sm text-neutral-500">Pay anyone, anywhere. No banks needed.</p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h3 className="font-semibold mb-1">Open source</h3>
+              <p className="text-sm text-neutral-500">Every line of code is auditable on GitHub.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison */}
+      <section className="px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-2xl mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              Compare the difference
+            </h2>
+            <p className="text-lg text-neutral-400">
+              Traditional platforms vs blockchain escrow.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl">
+            {/* Traditional */}
+            <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.01]">
+              <div className="text-sm font-medium text-neutral-500 mb-6">Traditional Platforms</div>
+              <ul className="space-y-4">
+                {[
+                  "20% platform fees",
+                  "14-day payment holds",
+                  "Opaque dispute process",
+                  "Account freezing risk",
+                  "Geographic restrictions",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-neutral-400">
+                    <div className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center">
+                      <X className="w-3 h-3 text-neutral-600" />
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Trustify */}
+            <div className="p-8 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.02]">
+              <div className="text-sm font-medium text-white mb-6">Trustify</div>
+              <ul className="space-y-4">
+                {[
+                  "~$0.00025 per transaction",
+                  "Instant settlement",
+                  "Transparent on-chain logic",
+                  "Non-custodial — you control funds",
+                  "Works globally, no restrictions",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-neutral-200">
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-green-500" />
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="relative rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-transparent p-12 md:p-16 overflow-hidden">
+            {/* Background glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-radial from-white/10 via-transparent to-transparent blur-3xl pointer-events-none" />
+
+            <div className="relative text-center max-w-2xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                Ready to try trustless payments?
+              </h2>
+              <p className="text-lg text-neutral-400 mb-8">
+                Test the full escrow flow on Solana Devnet. No real money required.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  className="bg-white text-black hover:bg-neutral-200 h-12 px-8 font-medium"
+                  onClick={() => router.push("/demo")}
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Watch Demo
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                  onClick={() => router.push("/dashboard/client")}
+                >
+                  Open Dashboard
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-2xl font-bold text-white">Trustify</span>
+      <footer className="px-6 py-12 border-t border-white/5">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center">
+                <span className="text-black font-bold text-xs">T</span>
               </div>
-              <p className="text-white/60 text-sm">The future of freelancing powered by blockchain technology.</p>
+              <span className="font-medium">Trustify</span>
             </div>
 
-            <div>
-              <h4 className="text-white font-semibold mb-4">Platform</h4>
-              <ul className="space-y-2 text-sm text-white/60">
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    How It Works
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Security
-                  </Link>
-                </li>
-              </ul>
+            <div className="flex items-center gap-6 text-sm text-neutral-500">
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                GitHub
+              </a>
+              <a href="https://explorer.solana.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                Explorer
+              </a>
+              <span>Built on Solana</span>
             </div>
 
-            <div>
-              <h4 className="text-white font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-white/60">
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Contact Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Dispute Resolution
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Community
-                  </Link>
-                </li>
-              </ul>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-neutral-400">Devnet</span>
             </div>
-
-            <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-white/60">
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Cookie Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Blockchain Terms
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-white/10 mt-8 pt-8 text-center">
-            <p className="text-white/60 text-sm">
-              © 2024 Trustify. All rights reserved. Built on blockchain technology.
-            </p>
           </div>
         </div>
       </footer>

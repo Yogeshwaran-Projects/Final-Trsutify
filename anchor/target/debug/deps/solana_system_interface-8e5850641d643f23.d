@@ -1,0 +1,9 @@
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/debug/deps/solana_system_interface-8e5850641d643f23.d: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/error.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/instruction.rs
+
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/debug/deps/libsolana_system_interface-8e5850641d643f23.rlib: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/error.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/instruction.rs
+
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/debug/deps/libsolana_system_interface-8e5850641d643f23.rmeta: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/error.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/instruction.rs
+
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/lib.rs:
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/error.rs:
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-system-interface-1.0.0/src/instruction.rs:

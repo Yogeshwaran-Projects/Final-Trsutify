@@ -1,0 +1,1 @@
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/sbpf-solana-solana/release/trustify.so: /Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/programs/trustify/src/lib.rs

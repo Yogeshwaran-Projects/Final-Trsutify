@@ -1,0 +1,9 @@
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/sbpf-solana-solana/release/deps/libsolana_invoke-013e1178f3f11877.rmeta: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/stable_instruction_borrowed.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/../README.md
+
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/sbpf-solana-solana/release/deps/libsolana_invoke-013e1178f3f11877.rlib: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/stable_instruction_borrowed.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/../README.md
+
+/Users/yogeshwaran/Documents/Trustify-Blockchain/Trustify-Blockchain-V2/anchor/target/sbpf-solana-solana/release/deps/solana_invoke-013e1178f3f11877.d: /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/lib.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/stable_instruction_borrowed.rs /Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/../README.md
+
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/lib.rs:
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/stable_instruction_borrowed.rs:
+/Users/yogeshwaran/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-invoke-0.4.0/src/../README.md:
