@@ -124,31 +124,62 @@ export const solToLamports = (sol: number): BN => {
 }
 
 /**
- * Fetch all program accounts and decode individually, skipping old/broken accounts.
- * This avoids program.account.escrow.all() which throws if ANY account fails to deserialize.
+ * Fetch escrows safely. Uses Anchor's standard all() first.
+ * Falls back to raw per-account decoding if all() throws (old accounts cause batch failure).
  */
 const safeFetchAllEscrows = async (
   program: Program,
   filters?: { memcmp: { offset: number; bytes: string } }[]
 ): Promise<EscrowAccount[]> => {
-  const connection = getConnection()
-  const programFilters = filters?.map((f) => ({ memcmp: f.memcmp })) ?? []
+  const anchorFilters = filters?.map((f) => ({ memcmp: f.memcmp }))
 
-  const rawAccounts = await connection.getProgramAccounts(getProgramId(), {
-    filters: programFilters.length > 0 ? programFilters : undefined,
-  })
-
-  const results: EscrowAccount[] = []
-  for (const { pubkey, account } of rawAccounts) {
-    try {
-      const decoded = program.coder.accounts.decode("escrow", account.data)
-      const mapped = safeMapEscrow(pubkey, decoded)
-      if (mapped) results.push(mapped)
-    } catch {
-      // Old account with different layout — skip
-    }
+  // Try standard Anchor fetch first (works when no old accounts in result set)
+  try {
+    const accounts = await program.account.escrow.all(anchorFilters)
+    return accounts
+      .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
+      .filter((e): e is EscrowAccount => e !== null)
+  } catch {
+    // Batch decode failed (old accounts mixed in) — fall back to per-account decode
   }
-  return results
+
+  // Fallback: fetch raw and decode individually
+  try {
+    const connection = getConnection()
+    const rpcFilters: any[] = []
+
+    // Add discriminator filter (first 8 bytes identify Escrow accounts)
+    const disc = (program.account.escrow as any).coder?.accounts?.accountDiscriminator?.("Escrow")
+      ?? (program as any)._coder?.accounts?.accountDiscriminator?.("Escrow")
+    if (disc) {
+      const bs58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+      // Use Anchor's internal bs58 encoding via a known method
+      rpcFilters.push({ memcmp: { offset: 0, bytes: program.coder.accounts.memcmp("Escrow").bytes } })
+    }
+
+    if (filters) {
+      for (const f of filters) rpcFilters.push({ memcmp: f.memcmp })
+    }
+
+    const rawAccounts = await connection.getProgramAccounts(getProgramId(), {
+      filters: rpcFilters.length > 0 ? rpcFilters : undefined,
+    })
+
+    const results: EscrowAccount[] = []
+    for (const { pubkey, account } of rawAccounts) {
+      try {
+        const decoded = program.coder.accounts.decode("Escrow", account.data)
+        const mapped = safeMapEscrow(pubkey, decoded)
+        if (mapped) results.push(mapped)
+      } catch {
+        // Skip
+      }
+    }
+    return results
+  } catch (e) {
+    console.error("Fallback fetch also failed:", e)
+    return []
+  }
 }
 
 const safeMapEscrow = (publicKey: PublicKey, account: any): EscrowAccount | null => {
