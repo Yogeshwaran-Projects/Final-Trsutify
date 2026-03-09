@@ -123,6 +123,32 @@ export const solToLamports = (sol: number): BN => {
   return new BN(sol * LAMPORTS_PER_SOL)
 }
 
+/**
+ * Safely map an on-chain account to EscrowAccount.
+ * Returns null for old accounts that pre-date the submission_cid migration.
+ */
+const safeMapEscrow = (publicKey: PublicKey, account: any): EscrowAccount | null => {
+  try {
+    // Old escrows don't have submissionCid — their bump will deserialize wrong
+    const bump = account.bump as number
+    if (typeof bump !== "number" || bump < 0 || bump > 255) return null
+    return {
+      publicKey,
+      client: account.client as PublicKey,
+      freelancer: account.freelancer as PublicKey,
+      amount: account.amount as BN,
+      status: parseEscrowStatus(account.status),
+      escrowId: account.escrowId as BN,
+      createdAt: account.createdAt as BN,
+      description: account.description as string,
+      submissionCid: (account.submissionCid as string) || "",
+      bump,
+    }
+  } catch {
+    return null
+  }
+}
+
 const parseEscrowStatus = (status: any): EscrowStatus => {
   if (status.open) return "Open"
   if (status.inProgress) return "InProgress"
@@ -352,18 +378,7 @@ export const fetchEscrow = async (
 
   try {
     const account = await program.account.escrow.fetch(escrowPubkey)
-    return {
-      publicKey: escrowPubkey,
-      client: account.client as PublicKey,
-      freelancer: account.freelancer as PublicKey,
-      amount: account.amount as BN,
-      status: parseEscrowStatus(account.status),
-      escrowId: account.escrowId as BN,
-      createdAt: account.createdAt as BN,
-      description: account.description as string,
-      submissionCid: (account.submissionCid as string) || "",
-      bump: account.bump as number,
-    }
+    return safeMapEscrow(escrowPubkey, account)
   } catch (e) {
     console.error("Error fetching escrow:", e)
     return null
@@ -389,18 +404,9 @@ export const fetchClientEscrows = async (
     },
   ])
 
-  return accounts.map((acc) => ({
-    publicKey: acc.publicKey,
-    client: acc.account.client as PublicKey,
-    freelancer: acc.account.freelancer as PublicKey,
-    amount: acc.account.amount as BN,
-    status: parseEscrowStatus(acc.account.status),
-    escrowId: acc.account.escrowId as BN,
-    createdAt: acc.account.createdAt as BN,
-    description: acc.account.description as string,
-    submissionCid: (acc.account.submissionCid as string) || "",
-    bump: acc.account.bump as number,
-  }))
+  return accounts
+    .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
+    .filter((e): e is EscrowAccount => e !== null)
 }
 
 /**
@@ -422,18 +428,9 @@ export const fetchFreelancerEscrows = async (
     },
   ])
 
-  return accounts.map((acc) => ({
-    publicKey: acc.publicKey,
-    client: acc.account.client as PublicKey,
-    freelancer: acc.account.freelancer as PublicKey,
-    amount: acc.account.amount as BN,
-    status: parseEscrowStatus(acc.account.status),
-    escrowId: acc.account.escrowId as BN,
-    createdAt: acc.account.createdAt as BN,
-    description: acc.account.description as string,
-    submissionCid: (acc.account.submissionCid as string) || "",
-    bump: acc.account.bump as number,
-  }))
+  return accounts
+    .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
+    .filter((e): e is EscrowAccount => e !== null)
 }
 
 /**
@@ -448,17 +445,8 @@ export const fetchOpenEscrows = async (
   const accounts = await program.account.escrow.all()
 
   return accounts
-    .map((acc) => ({
-      publicKey: acc.publicKey,
-      client: acc.account.client as PublicKey,
-      freelancer: acc.account.freelancer as PublicKey,
-      amount: acc.account.amount as BN,
-      status: parseEscrowStatus(acc.account.status),
-      createdAt: acc.account.createdAt as BN,
-      description: acc.account.description as string,
-      submissionCid: (acc.account.submissionCid as string) || "",
-      bump: acc.account.bump as number,
-    }))
+    .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
+    .filter((e): e is EscrowAccount => e !== null)
     .filter((escrow) => escrow.status === "Open")
 }
 

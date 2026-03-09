@@ -16,6 +16,7 @@ import {
   releaseFunds,
   cancelEscrow,
   raiseDispute,
+  getAddressExplorerUrl,
 } from "@/lib/solana"
 import { getFileUrl } from "@/lib/ipfs"
 import {
@@ -28,6 +29,10 @@ import {
   Upload,
   X,
   Eye,
+  ChevronDown,
+  Clock,
+  Hash,
+  RefreshCw,
 } from "lucide-react"
 
 interface EscrowCardProps {
@@ -41,6 +46,7 @@ export function EscrowCard({ escrow, onAction }: EscrowCardProps) {
   const [error, setError] = useState("")
   const [showSubmitDialog, setShowSubmitDialog] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
+  const [expanded, setExpanded] = useState(false)
 
   const sol = lamportsToSol(escrow.amount)
   const title = getEscrowTitle(escrow)
@@ -72,36 +78,145 @@ export function EscrowCard({ escrow, onAction }: EscrowCardProps) {
 
   return (
     <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5 space-y-4">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="font-semibold text-white truncate">{title}</h3>
+      {/* Header — click to expand details */}
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full text-left"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-white truncate">{title}</h3>
+              <ChevronDown className={`w-4 h-4 text-neutral-500 transition-transform shrink-0 ${expanded ? "rotate-180" : ""}`} />
+            </div>
+            {desc && (
+              <p className="text-sm text-neutral-400 mt-1 line-clamp-2">{desc}</p>
+            )}
+          </div>
+          <StatusBadge status={escrow.status} />
+        </div>
+
+        {/* Amount */}
+        <div className="text-lg mt-3">
+          <SolAmount sol={sol} />
+        </div>
+      </button>
+
+      {/* Expanded Details */}
+      {expanded && (
+        <div className="rounded-lg border border-neutral-800 bg-neutral-800/30 p-4 space-y-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <span className="text-neutral-500 text-xs">Sender</span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="font-mono text-neutral-300 text-xs">{escrow.client.toBase58()}</span>
+                {isClient && <span className="text-blue-400 text-xs">(you)</span>}
+              </div>
+            </div>
+            {!freelancerIsZero && (
+              <div>
+                <span className="text-neutral-500 text-xs">Receiver</span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="font-mono text-neutral-300 text-xs">{escrow.freelancer.toBase58()}</span>
+                  {isFreelancer && <span className="text-green-400 text-xs">(you)</span>}
+                </div>
+              </div>
+            )}
+            {freelancerIsZero && (
+              <div>
+                <span className="text-neutral-500 text-xs">Receiver</span>
+                <div className="text-neutral-400 text-xs mt-0.5">Open to anyone</div>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div>
+              <span className="text-neutral-500 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Created</span>
+              <div className="text-neutral-300 text-xs mt-0.5">
+                {new Date(escrow.createdAt.toNumber() * 1000).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+              </div>
+            </div>
+            <div>
+              <span className="text-neutral-500 text-xs flex items-center gap-1"><Hash className="w-3 h-3" /> Escrow ID</span>
+              <div className="text-neutral-300 text-xs mt-0.5 font-mono">{truncate(escrow.publicKey.toBase58())}</div>
+            </div>
+            <div>
+              <a
+                href={getAddressExplorerUrl(escrow.publicKey.toBase58())}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 mt-3"
+              >
+                View on Explorer <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+
           {desc && (
-            <p className="text-sm text-neutral-400 mt-1 line-clamp-2">{desc}</p>
+            <div>
+              <span className="text-neutral-500 text-xs">Full Description</span>
+              <p className="text-neutral-300 text-xs mt-0.5 whitespace-pre-wrap">{desc}</p>
+            </div>
+          )}
+
+          {/* Attached files in expanded view */}
+          {files.length > 0 && (
+            <div>
+              <span className="text-neutral-500 text-xs">Attached Files</span>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {files.map((f) => (
+                  <a
+                    key={f.cid}
+                    href={getFileUrl(f.cid)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-800 text-xs text-neutral-300 hover:bg-neutral-700 transition-colors"
+                  >
+                    <FileText className="w-3 h-3" />
+                    {f.name}
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Refresh button inside expanded view */}
+          <div className="flex items-center gap-2 pt-2 border-t border-neutral-700">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAction?.()
+              }}
+              className="text-neutral-400 hover:text-white text-xs gap-1.5"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Refresh
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Compact addresses (when collapsed) */}
+      {!expanded && (
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-neutral-500">
+          <span>
+            Sender: <span className="font-mono">{truncate(escrow.client.toBase58())}</span>
+            {isClient && <span className="ml-1 text-blue-400">(you)</span>}
+          </span>
+          {!freelancerIsZero && (
+            <span>
+              Receiver:{" "}
+              <span className="font-mono">{truncate(escrow.freelancer.toBase58())}</span>
+              {isFreelancer && <span className="ml-1 text-green-400">(you)</span>}
+            </span>
           )}
         </div>
-        <StatusBadge status={escrow.status} />
-      </div>
-
-      {/* Amount */}
-      <div className="text-lg">
-        <SolAmount sol={sol} />
-      </div>
-
-      {/* Addresses */}
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-neutral-500">
-        <span>
-          Sender: <span className="font-mono">{truncate(escrow.client.toBase58())}</span>
-          {isClient && <span className="ml-1 text-blue-400">(you)</span>}
-        </span>
-        {!freelancerIsZero && (
-          <span>
-            Receiver:{" "}
-            <span className="font-mono">{truncate(escrow.freelancer.toBase58())}</span>
-            {isFreelancer && <span className="ml-1 text-green-400">(you)</span>}
-          </span>
-        )}
-      </div>
+      )}
 
       {/* Files */}
       {files.length > 0 && (

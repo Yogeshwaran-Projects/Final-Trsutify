@@ -12,6 +12,7 @@ import {
 } from "@/lib/solana"
 import { useEscrowMetadata } from "@/hooks/useEscrowMetadata"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Button } from "@/components/ui/button"
 import { DashboardHeader } from "@/components/DashboardHeader"
 import { CreateEscrowForm } from "@/components/CreateEscrowForm"
 import { EscrowCard } from "@/components/EscrowCard"
@@ -24,6 +25,7 @@ import {
   FolderOpen,
   Loader2,
   Wallet,
+  RefreshCw,
 } from "lucide-react"
 
 type StatusFilter = "all" | EscrowStatus
@@ -276,9 +278,21 @@ export default function DashboardPage() {
 
               {/* Receive Payment */}
               <TabsContent value="receive" className="space-y-6">
-                <h2 className="text-2xl font-bold">Receive Payment</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Receive Payment</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={fetchAll}
+                    disabled={loading}
+                    className="text-neutral-400 hover:text-white gap-1.5"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                    Refresh
+                  </Button>
+                </div>
                 <p className="text-neutral-400">
-                  Browse available escrows and accept work to receive payment.
+                  Browse available escrows and accept work to receive payment. Click on an escrow to see full details before accepting.
                 </p>
 
                 {directedToMe.length > 0 && (
