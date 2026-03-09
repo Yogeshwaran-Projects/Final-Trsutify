@@ -5,6 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { Button } from "@/components/ui/button"
 import { StatusBadge } from "@/components/StatusBadge"
 import { SolAmount } from "@/components/SolAmount"
+import { FileUpload, type UploadedFile } from "@/components/FileUpload"
 import {
   type EscrowAccount,
   lamportsToSol,
@@ -24,6 +25,9 @@ import {
   AlertCircle,
   User,
   ArrowUpRight,
+  Upload,
+  X,
+  Eye,
 } from "lucide-react"
 
 interface EscrowCardProps {
@@ -35,6 +39,8 @@ export function EscrowCard({ escrow, onAction }: EscrowCardProps) {
   const wallet = useWallet()
   const [loading, setLoading] = useState("")
   const [error, setError] = useState("")
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false)
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
 
   const sol = lamportsToSol(escrow.amount)
   const title = getEscrowTitle(escrow)
@@ -116,6 +122,30 @@ export function EscrowCard({ escrow, onAction }: EscrowCardProps) {
         </div>
       )}
 
+      {/* Proof Review: show submission proof when status is submitted and viewer is sender */}
+      {escrow.status === "Submitted" && escrow.submissionCid && isClient && (
+        <div className="rounded-lg border border-purple-800/50 bg-purple-900/20 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-purple-300">
+            <Eye className="w-4 h-4" />
+            Proof of Work Submitted
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-neutral-400 font-mono truncate">
+              CID: {escrow.submissionCid}
+            </span>
+            <a
+              href={getFileUrl(escrow.submissionCid)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-purple-800/40 text-xs text-purple-200 hover:bg-purple-700/50 transition-colors shrink-0"
+            >
+              View on IPFS
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Error */}
       {error && (
         <div className="flex items-center gap-2 text-red-400 text-sm">
@@ -171,19 +201,11 @@ export function EscrowCard({ escrow, onAction }: EscrowCardProps) {
         {escrow.status === "InProgress" && isFreelancer && (
           <Button
             size="sm"
-            onClick={() =>
-              runAction("Submit", () =>
-                submitWork(wallet, escrow.publicKey.toBase58())
-              )
-            }
+            onClick={() => setShowSubmitDialog(true)}
             disabled={!!loading}
             className="bg-purple-600 hover:bg-purple-700"
           >
-            {loading === "Submit" ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-1" />
-            ) : (
-              <ArrowUpRight className="w-4 h-4 mr-1" />
-            )}
+            <Upload className="w-4 h-4 mr-1" />
             Submit Work
           </Button>
         )}
@@ -232,6 +254,74 @@ export function EscrowCard({ escrow, onAction }: EscrowCardProps) {
             </Button>
           )}
       </div>
+
+      {/* Submit Work Dialog */}
+      {showSubmitDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-xl border border-neutral-700 bg-neutral-900 p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">Submit Work with Proof</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-neutral-400 hover:text-white"
+                onClick={() => {
+                  setShowSubmitDialog(false)
+                  setUploadedFiles([])
+                  setError("")
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <p className="text-sm text-neutral-400">
+              Upload your work files to IPFS as proof of completion. The sender will review these before releasing funds.
+            </p>
+
+            <FileUpload
+              onFilesChange={setUploadedFiles}
+              maxFiles={5}
+            />
+
+            {uploadedFiles.length > 0 && (
+              <div className="text-xs text-neutral-500">
+                CID: <span className="font-mono">{uploadedFiles[0].cid}</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="flex items-center gap-2 text-red-400 text-sm">
+                <AlertCircle className="w-4 h-4" />
+                {error}
+              </div>
+            )}
+
+            <Button
+              className="w-full bg-purple-600 hover:bg-purple-700"
+              disabled={uploadedFiles.length === 0 || !!loading}
+              onClick={() =>
+                runAction("Submit", async () => {
+                  await submitWork(
+                    wallet,
+                    escrow.publicKey.toBase58(),
+                    uploadedFiles[0].cid
+                  )
+                  setShowSubmitDialog(false)
+                  setUploadedFiles([])
+                })
+              }
+            >
+              {loading === "Submit" ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <ArrowUpRight className="w-4 h-4 mr-2" />
+              )}
+              Submit with Proof
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

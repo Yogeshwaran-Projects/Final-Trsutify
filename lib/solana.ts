@@ -34,6 +34,7 @@ export interface EscrowAccount {
   escrowId: BN
   createdAt: BN
   description: string
+  submissionCid: string
   bump: number
   metadata?: EscrowMetadata
 }
@@ -221,15 +222,17 @@ export const acceptEscrow = async (
  */
 export const submitWork = async (
   wallet: WalletContextState,
-  escrowAddress: string
+  escrowAddress: string,
+  submissionCid: string
 ): Promise<TransactionResult> => {
   if (!wallet.publicKey) throw new Error("Wallet not connected")
+  if (!submissionCid) throw new Error("Submission CID is required")
 
   const program = getProgram(wallet)
   const escrowPubkey = new PublicKey(escrowAddress)
 
   const signature = await program.methods
-    .submitWork()
+    .submitWork(submissionCid)
     .accounts({
       escrow: escrowPubkey,
       freelancer: wallet.publicKey,
@@ -350,6 +353,7 @@ export const fetchEscrow = async (
       escrowId: account.escrowId as BN,
       createdAt: account.createdAt as BN,
       description: account.description as string,
+      submissionCid: (account.submissionCid as string) || "",
       bump: account.bump as number,
     }
   } catch (e) {
@@ -386,6 +390,7 @@ export const fetchClientEscrows = async (
     escrowId: acc.account.escrowId as BN,
     createdAt: acc.account.createdAt as BN,
     description: acc.account.description as string,
+    submissionCid: (acc.account.submissionCid as string) || "",
     bump: acc.account.bump as number,
   }))
 }
@@ -418,6 +423,7 @@ export const fetchFreelancerEscrows = async (
     escrowId: acc.account.escrowId as BN,
     createdAt: acc.account.createdAt as BN,
     description: acc.account.description as string,
+    submissionCid: (acc.account.submissionCid as string) || "",
     bump: acc.account.bump as number,
   }))
 }
@@ -442,6 +448,7 @@ export const fetchOpenEscrows = async (
       status: parseEscrowStatus(acc.account.status),
       createdAt: acc.account.createdAt as BN,
       description: acc.account.description as string,
+      submissionCid: (acc.account.submissionCid as string) || "",
       bump: acc.account.bump as number,
     }))
     .filter((escrow) => escrow.status === "Open")
