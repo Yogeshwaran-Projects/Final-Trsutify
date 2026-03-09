@@ -1,5 +1,6 @@
 import { Connection, PublicKey, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js"
-import { Program, AnchorProvider, BN, type Wallet as AnchorWallet } from "@project-serum/anchor"
+import { Program, AnchorProvider, BN, BorshAccountsCoder, type Wallet as AnchorWallet } from "@project-serum/anchor"
+import bs58 from "bs58"
 import type { WalletContextState } from "@solana/wallet-adapter-react"
 import idl from "../idl/trustify.json"
 import { extractCid, fetchMetadata, type EscrowMetadata } from "./ipfs"
@@ -124,28 +125,35 @@ export const solToLamports = (sol: number): BN => {
 }
 
 /**
- * Fetch all program accounts and decode individually, skipping old/broken accounts.
- * This avoids program.account.escrow.all() which throws if ANY account fails to deserialize.
+ * Fetch escrows via raw getProgramAccounts + per-account decode.
+ * Anchor's all() throws if ANY account has wrong layout, so we decode individually.
  */
+const ESCROW_DISCRIMINATOR = bs58.encode(BorshAccountsCoder.accountDiscriminator("Escrow"))
+
 const safeFetchAllEscrows = async (
   program: Program,
   filters?: { memcmp: { offset: number; bytes: string } }[]
 ): Promise<EscrowAccount[]> => {
   const connection = getConnection()
-  const programFilters = filters?.map((f) => ({ memcmp: f.memcmp })) ?? []
+  const rpcFilters: any[] = [
+    { memcmp: { offset: 0, bytes: ESCROW_DISCRIMINATOR } },
+  ]
+  if (filters) {
+    for (const f of filters) rpcFilters.push({ memcmp: f.memcmp })
+  }
 
   const rawAccounts = await connection.getProgramAccounts(getProgramId(), {
-    filters: programFilters.length > 0 ? programFilters : undefined,
+    filters: rpcFilters,
   })
 
   const results: EscrowAccount[] = []
   for (const { pubkey, account } of rawAccounts) {
     try {
-      const decoded = program.coder.accounts.decode("escrow", account.data)
+      const decoded = program.coder.accounts.decode("Escrow", account.data)
       const mapped = safeMapEscrow(pubkey, decoded)
       if (mapped) results.push(mapped)
     } catch {
-      // Old account with different layout — skip
+      // Old account — skip
     }
   }
   return results
