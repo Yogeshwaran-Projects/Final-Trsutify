@@ -13,9 +13,14 @@ pub mod trustify {
         amount: u64,
         description: String,
         escrow_id: u64,
+        receiver: Pubkey,
     ) -> Result<()> {
         require!(amount > 0, EscrowError::InvalidAmount);
         require!(description.len() <= 200, EscrowError::DescriptionTooLong);
+        require!(
+            receiver == Pubkey::default() || receiver != ctx.accounts.client.key(),
+            EscrowError::ClientCannotBeFreelancer
+        );
 
         // Save keys before mutable borrow
         let escrow_key = ctx.accounts.escrow.key();
@@ -36,7 +41,7 @@ pub mod trustify {
         // Now initialize the escrow account
         let escrow = &mut ctx.accounts.escrow;
         escrow.client = client_key;
-        escrow.freelancer = Pubkey::default();
+        escrow.freelancer = receiver;
         escrow.amount = amount;
         escrow.status = EscrowStatus::Open;
         escrow.escrow_id = escrow_id;
@@ -49,6 +54,7 @@ pub mod trustify {
             client: client_key,
             amount,
             description,
+            receiver,
         });
 
         Ok(())
@@ -65,6 +71,10 @@ pub mod trustify {
         require!(
             ctx.accounts.freelancer.key() != escrow.client,
             EscrowError::ClientCannotBeFreelancer
+        );
+        require!(
+            escrow.freelancer == Pubkey::default() || escrow.freelancer == ctx.accounts.freelancer.key(),
+            EscrowError::UnauthorizedFreelancer
         );
 
         escrow.freelancer = ctx.accounts.freelancer.key();
@@ -322,6 +332,7 @@ pub struct EscrowCreated {
     pub client: Pubkey,
     pub amount: u64,
     pub description: String,
+    pub receiver: Pubkey,
 }
 
 #[event]

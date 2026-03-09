@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
   ArrowRight,
@@ -44,7 +45,7 @@ export default function LandingPage() {
     { cmd: false, text: "✓ 2.5 SOL locked in vault" },
     { cmd: true, text: "$ trustify release --escrow 4nFv...8kLm" },
     { cmd: false, text: "Validating work submission..." },
-    { cmd: false, text: "✓ Transferring 2.5 SOL to freelancer" },
+    { cmd: false, text: "✓ Transferring 2.5 SOL to receiver" },
     { cmd: false, text: "✓ Escrow closed. Transaction complete." },
   ]
 
@@ -59,9 +60,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-                <span className="text-black font-bold text-sm">T</span>
-              </div>
+              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-0.5"><Image src="/logo.png" alt="Trustify" width={28} height={28} className="w-full h-full object-contain rounded-md" /></div>
               <span className="font-semibold text-lg">Trustify</span>
             </Link>
 
@@ -75,6 +74,12 @@ export default function LandingPage() {
                   {item}
                 </Link>
               ))}
+              <Link
+                href="/architecture"
+                className="px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors"
+              >
+                Architecture
+              </Link>
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
@@ -89,7 +94,7 @@ export default function LandingPage() {
               <Button
                 size="sm"
                 className="bg-white text-black hover:bg-neutral-200 font-medium"
-                onClick={() => router.push("/dashboard/client")}
+                onClick={() => router.push("/dashboard")}
               >
                 Launch App
                 <ArrowRight className="w-4 h-4 ml-1" />
@@ -113,9 +118,10 @@ export default function LandingPage() {
             <div className="px-6 py-4 space-y-4">
               <Link href="#how-it-works" className="block text-neutral-400">How it works</Link>
               <Link href="#features" className="block text-neutral-400">Features</Link>
+              <Link href="/architecture" className="block text-neutral-400">Architecture</Link>
               <div className="pt-4 border-t border-white/5 space-y-2">
                 <Button variant="outline" className="w-full" onClick={() => router.push("/demo")}>Demo</Button>
-                <Button className="w-full bg-white text-black" onClick={() => router.push("/dashboard/client")}>Launch App</Button>
+                <Button className="w-full bg-white text-black" onClick={() => router.push("/dashboard")}>Launch App</Button>
               </div>
             </div>
           </div>
@@ -149,7 +155,7 @@ export default function LandingPage() {
 
             {/* Subheadline */}
             <p className="text-lg md:text-xl text-neutral-400 leading-relaxed mb-10 max-w-2xl">
-              Trustify is a decentralized escrow protocol on Solana. Funds are locked in a smart contract until work is verified. No intermediaries. No fees. Just code.
+              Trustify is a decentralized escrow middleware. Secure any payment with Solana smart contracts. Plug it into your app with a single component.
             </p>
 
             {/* CTA */}
@@ -166,7 +172,7 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 className="h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 text-white font-medium text-base"
-                onClick={() => router.push("/dashboard/client")}
+                onClick={() => router.push("/dashboard")}
               >
                 Start Building
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -278,22 +284,22 @@ export default function LandingPage() {
               {
                 step: "01",
                 title: "Create escrow",
-                desc: "Client locks SOL in a program-derived address. Only the smart contract can access these funds.",
+                desc: "Sender locks SOL in a program-derived address. Only the smart contract can access these funds.",
               },
               {
                 step: "02",
-                title: "Accept job",
-                desc: "Freelancer reviews terms and accepts. The escrow status updates on-chain.",
+                title: "Accept Escrow",
+                desc: "Receiver reviews terms and accepts. The escrow status updates on-chain.",
               },
               {
                 step: "03",
-                title: "Submit work",
-                desc: "Freelancer completes the work and submits proof. The escrow moves to review status.",
+                title: "Confirm Delivery",
+                desc: "Receiver confirms delivery and submits proof. The escrow moves to review status.",
               },
               {
                 step: "04",
                 title: "Release funds",
-                desc: "Client approves the work. Funds transfer instantly to the freelancer. Done.",
+                desc: "Sender approves and releases funds. SOL transfers instantly to the receiver. Done.",
               },
             ].map((item, i) => (
               <div
@@ -377,6 +383,124 @@ export default function LandingPage() {
               </div>
               <h3 className="font-semibold mb-1">Open source</h3>
               <p className="text-sm text-neutral-500">Every line of code is auditable on GitHub.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases */}
+      <section className="px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-2xl mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              Works for any transaction
+            </h2>
+            <p className="text-lg text-neutral-400">
+              Any payment where trust matters. One protocol, infinite use cases.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                title: "E-Commerce",
+                desc: "Protect buyers and sellers. Funds release only when goods are delivered.",
+                icon: (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ),
+              },
+              {
+                title: "Services",
+                desc: "Freelance work, consulting, design — pay only when the job is done.",
+                icon: (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ),
+              },
+              {
+                title: "Rentals",
+                desc: "Security deposits held in escrow. Auto-refund or deduct on return.",
+                icon: (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9 22V12h6v10" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ),
+              },
+              {
+                title: "P2P Trading",
+                desc: "Swap assets safely. Neither party can run with the other's funds.",
+                icon: (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ),
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all"
+              >
+                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4">
+                  {item.icon}
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                <p className="text-sm text-neutral-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Developer SDK Preview */}
+      <section className="px-6 py-24 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                One component. Full escrow.
+              </h2>
+              <p className="text-lg text-neutral-400 mb-6">
+                Drop a single React component into your app. Trustify handles wallet connection,
+                escrow creation, and fund management.
+              </p>
+              <Link href="/integration-demo">
+                <Button
+                  size="lg"
+                  className="bg-white text-black hover:bg-neutral-200 h-12 px-6 font-medium"
+                >
+                  See Integration Demo
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-[#0c0c0e] overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-white/10" />
+                  <div className="w-3 h-3 rounded-full bg-white/10" />
+                  <div className="w-3 h-3 rounded-full bg-white/10" />
+                </div>
+                <span className="text-xs text-neutral-500 ml-2">checkout.tsx</span>
+              </div>
+              <pre className="p-6 text-sm font-mono overflow-x-auto">
+                <code className="text-neutral-300">{`import { TrustifyButton } from "@trustify/sdk"
+
+export default function Checkout() {
+  return (
+    <TrustifyButton
+      amount={1.5}
+      description="Premium headphones"
+      onSuccess={(sig) => {
+        console.log("Paid!", sig)
+      }}
+    />
+  )
+}`}</code>
+              </pre>
             </div>
           </div>
         </div>
@@ -467,9 +591,17 @@ export default function LandingPage() {
                   size="lg"
                   variant="outline"
                   className="h-12 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                  onClick={() => router.push("/dashboard/client")}
+                  onClick={() => router.push("/dashboard")}
                 >
                   Open Dashboard
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                  onClick={() => router.push("/architecture")}
+                >
+                  Architecture
                 </Button>
               </div>
             </div>
@@ -482,9 +614,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center">
-                <span className="text-black font-bold text-xs">T</span>
-              </div>
+              <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center p-0.5"><Image src="/logo.png" alt="Trustify" width={24} height={24} className="w-full h-full object-contain rounded-sm" /></div>
               <span className="font-medium">Trustify</span>
             </div>
 

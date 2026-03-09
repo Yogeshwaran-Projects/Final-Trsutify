@@ -9,6 +9,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  serverExternalPackages: ['pino-pretty', 'lokijs', 'encoding'],
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

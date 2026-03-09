@@ -218,18 +218,18 @@ export default function DemoPage() {
       { text: "$ trustify accept-escrow --escrow " + formatAddress(escrowAddress), type: "command" },
       { text: "", type: "info", delay: 30 },
       { text: "Fetching escrow account...", type: "info" },
-      { text: `  Client: ${formatAddress(clientAddress)}`, type: "info" },
-      { text: "  Freelancer: null", type: "info" },
+      { text: `  Sender: ${formatAddress(clientAddress)}`, type: "info" },
+      { text: "  Receiver: null", type: "info" },
       { text: "  Amount: 2.5 SOL", type: "info" },
       { text: "  Status: Open", type: "info" },
       { text: "", type: "info", delay: 30 },
       { text: "Validating...", type: "info" },
       { text: "  ✓ Escrow is Open", type: "success" },
-      { text: "  ✓ Caller is not client", type: "success" },
+      { text: "  ✓ Caller is not sender", type: "success" },
       { text: "", type: "info", delay: 30 },
       { text: "Building transaction...", type: "info" },
       { text: "  Instruction: accept_escrow", type: "info" },
-      { text: `  Freelancer: ${formatAddress(freelancerAddress)}`, type: "info" },
+      { text: `  Receiver: ${formatAddress(freelancerAddress)}`, type: "info" },
       { text: "", type: "info", delay: 30 },
       { text: "Requesting signature from wallet...", type: "warning" },
       { text: "Signature received ✓", type: "success", delay: 150 },
@@ -263,11 +263,11 @@ export default function DemoPage() {
       { text: "", type: "info", delay: 30 },
       { text: "Fetching escrow account...", type: "info" },
       { text: "  Status: InProgress", type: "info" },
-      { text: `  Freelancer: ${formatAddress(freelancerAddress)}`, type: "info" },
+      { text: `  Receiver: ${formatAddress(freelancerAddress)}`, type: "info" },
       { text: "", type: "info", delay: 30 },
       { text: "Validating...", type: "info" },
       { text: "  ✓ Escrow is InProgress", type: "success" },
-      { text: "  ✓ Caller is assigned freelancer", type: "success" },
+      { text: "  ✓ Caller is assigned receiver", type: "success" },
       { text: "", type: "info", delay: 30 },
       { text: "Building transaction...", type: "info" },
       { text: "  Instruction: submit_work", type: "info" },
@@ -281,7 +281,7 @@ export default function DemoPage() {
       { text: "", type: "info", delay: 30 },
       { text: "Transaction confirmed!", type: "success" },
       { text: "", type: "info", delay: 30 },
-      { text: "Work submitted. Waiting for client approval.", type: "success" },
+      { text: "Delivery confirmed. Waiting for sender to release funds.", type: "success" },
     ])
 
     addTransaction({
@@ -306,11 +306,11 @@ export default function DemoPage() {
       { text: "Fetching escrow account...", type: "info" },
       { text: "  Status: Submitted", type: "info" },
       { text: "  Amount: 2.5 SOL", type: "info" },
-      { text: `  Freelancer: ${formatAddress(freelancerAddress)}`, type: "info" },
+      { text: `  Receiver: ${formatAddress(freelancerAddress)}`, type: "info" },
       { text: "", type: "info", delay: 30 },
       { text: "Validating...", type: "info" },
       { text: "  ✓ Escrow is Submitted", type: "success" },
-      { text: "  ✓ Caller is client", type: "success" },
+      { text: "  ✓ Caller is sender", type: "success" },
       { text: "", type: "info", delay: 30 },
       { text: "Building transaction...", type: "info" },
       { text: "  Instruction: release_funds", type: "info" },
@@ -324,11 +324,11 @@ export default function DemoPage() {
       { text: "Sending transaction to cluster...", type: "info" },
       { text: "  Confirmations: 32/32", type: "info", delay: 120 },
       { text: "", type: "info", delay: 30 },
-      { text: "Transferring 2.5 SOL to freelancer...", type: "info", delay: 100 },
+      { text: "Transferring 2.5 SOL to receiver...", type: "info", delay: 100 },
       { text: "Transfer complete ✓", type: "success" },
       { text: "", type: "info", delay: 30 },
       { text: "Closing escrow account...", type: "info" },
-      { text: "Rent returned to client: 0.00203928 SOL", type: "info" },
+      { text: "Rent returned to sender: 0.00203928 SOL", type: "info" },
       { text: "", type: "info", delay: 30 },
       { text: "Transaction confirmed!", type: "success" },
       { text: "", type: "info", delay: 30 },
@@ -381,10 +381,10 @@ export default function DemoPage() {
                 <span className="text-2xl font-bold text-white">A</span>
               </div>
               <div>
-                <h3 className="text-xl font-semibold mb-2">Alice — The Client</h3>
+                <h3 className="text-xl font-semibold mb-2">Alice — The Sender</h3>
                 <p className="text-neutral-400">
-                  Alice runs a small business and needs an e-commerce platform built.
-                  She has <span className="text-white font-mono">12.5 SOL</span> in her wallet and wants to hire a developer.
+                  Alice wants to pay for an e-commerce platform to be built.
+                  She has <span className="text-white font-mono">12.5 SOL</span> in her wallet and needs a secure way to send payment.
                 </p>
                 <p className="text-neutral-500 text-sm mt-2 font-mono">
                   Wallet: {formatAddress(clientAddress)}
@@ -397,10 +397,10 @@ export default function DemoPage() {
                 <span className="text-2xl font-bold text-white">B</span>
               </div>
               <div>
-                <h3 className="text-xl font-semibold mb-2">Bob — The Freelancer</h3>
+                <h3 className="text-xl font-semibold mb-2">Bob — The Receiver</h3>
                 <p className="text-neutral-400">
-                  Bob is a full-stack developer looking for work.
-                  He has <span className="text-white font-mono">0.75 SOL</span> and is ready to take on new projects.
+                  Bob is the seller delivering the product.
+                  He has <span className="text-white font-mono">0.75 SOL</span> and is ready to receive payment securely.
                 </p>
                 <p className="text-neutral-500 text-sm mt-2 font-mono">
                   Wallet: {formatAddress(freelancerAddress)}
@@ -415,16 +415,16 @@ export default function DemoPage() {
         content: (
           <div className="space-y-6">
             <p className="text-xl text-neutral-300 leading-relaxed">
-              Alice wants to hire Bob, but they've never met. She's worried:
+              Alice wants to pay Bob, but they've never met. She's worried:
             </p>
             <div className="space-y-4">
               <div className="flex items-start gap-4 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
                 <X className="w-5 h-5 text-red-400 mt-0.5" />
-                <p className="text-neutral-300">"What if I pay upfront and Bob disappears with my money?"</p>
+                <p className="text-neutral-300">"What if I pay upfront and the seller never delivers?"</p>
               </div>
               <div className="flex items-start gap-4 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
                 <X className="w-5 h-5 text-red-400 mt-0.5" />
-                <p className="text-neutral-300">"What if Bob does the work and I refuse to pay?"</p>
+                <p className="text-neutral-300">"What if Bob delivers and I refuse to release payment?"</p>
               </div>
               <div className="flex items-start gap-4 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
                 <X className="w-5 h-5 text-red-400 mt-0.5" />
@@ -432,7 +432,7 @@ export default function DemoPage() {
               </div>
             </div>
             <p className="text-lg text-neutral-400 pt-4">
-              They need a way to work together <span className="text-white">without trusting each other</span>.
+              They need a way to transact <span className="text-white">without trusting each other</span>.
             </p>
           </div>
         )
@@ -496,7 +496,7 @@ export default function DemoPage() {
               You're about to watch a complete escrow transaction unfold.
             </p>
             <p className="text-neutral-500">
-              Alice will create an escrow, Bob will accept and deliver work,
+              Alice will create an escrow, Bob will accept and confirm delivery,
               and Alice will release payment — all secured by blockchain.
             </p>
             <div className="pt-4">
@@ -585,8 +585,8 @@ export default function DemoPage() {
                 <span className="text-sm font-bold text-white">B</span>
               </div>
               <div>
-                <h3 className="font-semibold">Bob is submitting work</h3>
-                <p className="text-neutral-500 text-sm">Review deliverables before submission</p>
+                <h3 className="font-semibold">Bob is confirming delivery</h3>
+                <p className="text-neutral-500 text-sm">Review deliverables before confirmation</p>
               </div>
             </div>
           </div>
@@ -611,7 +611,7 @@ export default function DemoPage() {
             </div>
 
             <div>
-              <label className="text-sm text-neutral-500 mb-2 block">Message to client</label>
+              <label className="text-sm text-neutral-500 mb-2 block">Message to sender</label>
               <div className="p-4 bg-neutral-800 rounded-xl text-sm text-neutral-300">
                 "Hi Alice! I've completed the e-commerce platform as requested. All features are implemented and tested.
                 Please review the live demo and let me know if you need any changes!"
@@ -632,7 +632,7 @@ export default function DemoPage() {
               className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
             >
               <Send className="w-4 h-4 mr-2" />
-              Submit Work
+              Confirm Delivery
             </Button>
           </div>
         </div>
@@ -651,7 +651,7 @@ export default function DemoPage() {
                 <span className="text-sm font-bold text-white">A</span>
               </div>
               <div>
-                <h3 className="font-semibold">Alice is reviewing work</h3>
+                <h3 className="font-semibold">Alice is reviewing delivery</h3>
                 <p className="text-neutral-500 text-sm">Verify deliverables before releasing payment</p>
               </div>
             </div>
@@ -772,8 +772,8 @@ export default function DemoPage() {
   // Main Demo UI
   const steps = [
     { title: "Create Escrow", actor: "client" },
-    { title: "Accept Job", actor: "freelancer" },
-    { title: "Submit Work", actor: "freelancer" },
+    { title: "Accept Escrow", actor: "freelancer" },
+    { title: "Confirm Delivery", actor: "freelancer" },
     { title: "Release Funds", actor: "client" },
   ]
 
@@ -845,7 +845,7 @@ export default function DemoPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Alice</h3>
-                    <p className="text-sm text-neutral-500">Client</p>
+                    <p className="text-sm text-neutral-500">Sender</p>
                   </div>
                   {(currentStep === 0 || currentStep === 3) && (
                     <span className="ml-auto px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full">Your turn</span>
@@ -875,7 +875,7 @@ export default function DemoPage() {
                 {currentStep === 3 && (
                   <Button onClick={() => setShowReviewModal(true)} className="w-full bg-blue-500 hover:bg-blue-600 text-white h-11">
                     <Eye className="w-4 h-4 mr-2" />
-                    Review Submitted Work
+                    Review Delivery
                   </Button>
                 )}
 
@@ -953,7 +953,7 @@ export default function DemoPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Bob</h3>
-                    <p className="text-sm text-neutral-500">Freelancer</p>
+                    <p className="text-sm text-neutral-500">Receiver</p>
                   </div>
                   {(currentStep === 1 || currentStep === 2) && (
                     <span className="ml-auto px-2 py-1 text-xs bg-emerald-500/20 text-emerald-400 rounded-full">Your turn</span>
@@ -973,20 +973,20 @@ export default function DemoPage() {
                 </div>
 
                 {currentStep === 0 && (
-                  <div className="text-center py-2 text-neutral-500 text-sm">Waiting for job...</div>
+                  <div className="text-center py-2 text-neutral-500 text-sm">Waiting for escrow...</div>
                 )}
 
                 {currentStep === 1 && (
                   <Button onClick={handleAcceptEscrow} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-11">
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Accept Job
+                    Accept Escrow
                   </Button>
                 )}
 
                 {currentStep === 2 && (
                   <Button onClick={() => setShowWorkModal(true)} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-11">
                     <Send className="w-4 h-4 mr-2" />
-                    Submit Work
+                    Confirm Delivery
                   </Button>
                 )}
 
@@ -1044,8 +1044,8 @@ export default function DemoPage() {
                 <h2 className="font-semibold">On-Chain State</h2>
               </div>
               <div className="p-5 font-mono text-xs space-y-1">
-                <div className="flex justify-between"><span className="text-neutral-600">client:</span><span>{currentStep >= 1 ? formatAddress(clientAddress) : "—"}</span></div>
-                <div className="flex justify-between"><span className="text-neutral-600">freelancer:</span><span>{currentStep >= 2 ? formatAddress(freelancerAddress) : "null"}</span></div>
+                <div className="flex justify-between"><span className="text-neutral-600">sender:</span><span>{currentStep >= 1 ? formatAddress(clientAddress) : "—"}</span></div>
+                <div className="flex justify-between"><span className="text-neutral-600">receiver:</span><span>{currentStep >= 2 ? formatAddress(freelancerAddress) : "null"}</span></div>
                 <div className="flex justify-between"><span className="text-neutral-600">amount:</span><span>{currentStep >= 1 ? `${(projectAmount * 1e9).toLocaleString()} lamports` : "0"}</span></div>
                 <div className="flex justify-between">
                   <span className="text-neutral-600">status:</span>
@@ -1127,7 +1127,7 @@ export default function DemoPage() {
                 <Button onClick={resetDemo} variant="outline" className="border-neutral-700 bg-transparent text-white hover:bg-neutral-800">
                   <RotateCcw className="w-4 h-4 mr-2" /> Run Again
                 </Button>
-                <Link href="/dashboard/client">
+                <Link href="/dashboard/sender">
                   <Button className="bg-neutral-100 text-neutral-900 hover:bg-neutral-200">
                     Try Real App <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>

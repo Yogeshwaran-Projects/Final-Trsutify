@@ -12,7 +12,8 @@
       "args": [
         { "name": "amount", "type": "u64" },
         { "name": "description", "type": "string" },
-        { "name": "escrowId", "type": "u64" }
+        { "name": "escrowId", "type": "u64" },
+        { "name": "receiver", "type": "publicKey" }
       ]
     },
     {
@@ -100,7 +101,8 @@
         { "name": "escrow", "type": "publicKey", "index": false },
         { "name": "client", "type": "publicKey", "index": false },
         { "name": "amount", "type": "u64", "index": false },
-        { "name": "description", "type": "string", "index": false }
+        { "name": "description", "type": "string", "index": false },
+        { "name": "receiver", "type": "publicKey", "index": false }
       ]
     },
     {
