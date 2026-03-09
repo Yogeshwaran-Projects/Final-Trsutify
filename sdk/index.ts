@@ -40,7 +40,7 @@ export {
   solToLamports,
 
   // Constants
-  PROGRAM_ID,
+  getProgramId,
   NETWORK,
   LAMPORTS_PER_SOL,
 

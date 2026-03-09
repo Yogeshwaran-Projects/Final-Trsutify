@@ -8,10 +8,18 @@ import { extractCid, fetchMetadata, type EscrowMetadata } from "./ipfs"
 // CONSTANTS
 // ============================================
 
-const PROGRAM_ID = new PublicKey(idl.metadata.address)
+let _programId: PublicKey | null = null
+const getProgramId = () => {
+  if (!_programId) _programId = new PublicKey(idl.metadata.address)
+  return _programId
+}
 const NETWORK = "https://devnet.helius-rpc.com/?api-key=0d877281-6ed1-4d0c-94d0-aa2d396aee2e"
 const ESCROW_SEED = "escrow"
-const DEFAULT_PUBKEY = new PublicKey(new Uint8Array(32))
+let _defaultPubkey: PublicKey | null = null
+const getDefaultPubkey = () => {
+  if (!_defaultPubkey) _defaultPubkey = new PublicKey(new Uint8Array(32))
+  return _defaultPubkey
+}
 
 // ============================================
 // TYPES
@@ -73,7 +81,7 @@ const getProvider = (wallet: WalletContextState): AnchorProvider => {
 
 const getProgram = (wallet: WalletContextState): Program => {
   const provider = getProvider(wallet)
-  return new Program(idl as any, PROGRAM_ID, provider)
+  return new Program(idl as any, getProgramId(), provider)
 }
 
 // ============================================
@@ -90,7 +98,7 @@ export const deriveEscrowPDA = (
 
   return PublicKey.findProgramAddressSync(
     [Buffer.from(ESCROW_SEED), clientPubkey.toBuffer(), escrowIdBuffer],
-    PROGRAM_ID
+    getProgramId()
   )
 }
 
@@ -169,7 +177,7 @@ export const createEscrow = async (
 
   const program = getProgram(wallet)
   const amount = solToLamports(amountSol)
-  const receiverPubkey = receiver ? new PublicKey(receiver) : DEFAULT_PUBKEY
+  const receiverPubkey = receiver ? new PublicKey(receiver) : getDefaultPubkey()
 
   // Generate unique escrow ID using timestamp
   const escrowId = new BN(Date.now())
@@ -489,5 +497,5 @@ export function getEscrowDescription(escrow: EscrowAccount): string {
 // UTILITY EXPORTS
 // ============================================
 
-export { PROGRAM_ID, NETWORK, LAMPORTS_PER_SOL }
+export { getProgramId, NETWORK, LAMPORTS_PER_SOL }
 export type { EscrowMetadata }
