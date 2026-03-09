@@ -89,7 +89,7 @@ export function EscrowFlow({
           {showLabels && (
             <div className="mt-2 text-center">
               <p className={`text-xs font-medium ${flowState.client ? "text-blue-300" : "text-white/40"}`}>
-                Client
+                Sender
               </p>
               {clientAddress && (
                 <p className="text-[10px] text-white/40 font-mono">
@@ -233,7 +233,7 @@ export function EscrowFlow({
           {showLabels && (
             <div className="mt-2 text-center">
               <p className={`text-xs font-medium ${flowState.freelancer ? "text-green-300" : "text-white/40"}`}>
-                Freelancer
+                Receiver
               </p>
               {freelancerAddress && (
                 <p className="text-[10px] text-white/40 font-mono">
@@ -291,7 +291,7 @@ export function EscrowFlowStatic() {
           <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-gradient-to-br from-blue-500/30 to-blue-600/30 border-2 border-blue-400/50 flex items-center justify-center">
             <Wallet className="w-8 h-8 text-blue-400" />
           </div>
-          <p className="mt-2 text-sm text-blue-300 font-medium">Client</p>
+          <p className="mt-2 text-sm text-blue-300 font-medium">Sender</p>
         </div>
 
         {/* Arrow */}
@@ -321,15 +321,15 @@ export function EscrowFlowStatic() {
           <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-gradient-to-br from-green-500/30 to-green-600/30 border-2 border-green-400/50 flex items-center justify-center">
             <User className="w-8 h-8 text-green-400" />
           </div>
-          <p className="mt-2 text-sm text-green-300 font-medium">Freelancer</p>
+          <p className="mt-2 text-sm text-green-300 font-medium">Receiver</p>
         </div>
       </div>
 
       {/* Description */}
       <div className="mt-8 text-center max-w-xl mx-auto">
         <p className="text-white/70 text-sm">
-          Client deposits funds into a smart contract vault. When work is approved,
-          funds are automatically released to the freelancer. No middleman, no fees.
+          Sender deposits funds into a smart contract vault. When delivery is confirmed,
+          funds are automatically released to the receiver. No middleman, no fees.
         </p>
       </div>
     </div>

@@ -19,29 +19,29 @@ export default function HowItWorksPage() {
   const steps = [
     {
       step: 1,
-      title: "Client Creates Escrow",
-      description: "The client deposits SOL into a secure smart contract vault. Funds are locked and can only be released by the client.",
+      title: "Sender Creates Escrow",
+      description: "The sender deposits SOL into a secure smart contract vault. Funds are locked and can only be released by the sender.",
       icon: Wallet,
       color: "from-blue-500 to-blue-600",
     },
     {
       step: 2,
-      title: "Freelancer Accepts Task",
-      description: "A freelancer reviews the task and accepts it. The escrow status changes to 'In Progress' and work begins.",
+      title: "Receiver Accepts Escrow",
+      description: "A receiver reviews the escrow and accepts it. The escrow status changes to 'In Progress' and the agreement begins.",
       icon: User,
       color: "from-purple-500 to-purple-600",
     },
     {
       step: 3,
-      title: "Work is Submitted",
-      description: "The freelancer completes the work and submits it for review. The escrow status changes to 'Submitted'.",
+      title: "Delivery Confirmed",
+      description: "The receiver confirms delivery and submits for review. The escrow status changes to 'Submitted'.",
       icon: CheckCircle,
       color: "from-yellow-500 to-orange-500",
     },
     {
       step: 4,
       title: "Funds Released",
-      description: "The client approves the work and releases funds. SOL is automatically transferred from the vault to the freelancer.",
+      description: "The sender approves and releases funds. SOL is automatically transferred from the vault to the receiver.",
       icon: ArrowRight,
       color: "from-green-500 to-emerald-500",
     },
@@ -135,7 +135,7 @@ export default function HowItWorksPage() {
                 <Shield className="w-12 h-12 text-blue-400 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-white mb-2">Access Control</h3>
                 <p className="text-white/70 text-sm">
-                  Only the client can release funds, only the freelancer can accept tasks
+                  Only the sender can release funds, only the receiver can accept escrows
                 </p>
               </CardContent>
             </Card>
@@ -161,9 +161,9 @@ export default function HowItWorksPage() {
                 Try Live Demo
               </Button>
             </Link>
-            <Link href="/dashboard/client">
+            <Link href="/dashboard/sender">
               <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
-                Client Dashboard
+                Sender Dashboard
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>

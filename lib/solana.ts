@@ -2,14 +2,16 @@ import { Connection, PublicKey, SystemProgram, LAMPORTS_PER_SOL } from "@solana/
 import { Program, AnchorProvider, BN, type Wallet as AnchorWallet } from "@project-serum/anchor"
 import type { WalletContextState } from "@solana/wallet-adapter-react"
 import idl from "../idl/trustify.json"
+import { extractCid, fetchMetadata, type EscrowMetadata } from "./ipfs"
 
 // ============================================
 // CONSTANTS
 // ============================================
 
 const PROGRAM_ID = new PublicKey(idl.metadata.address)
-const NETWORK = "https://api.devnet.solana.com"
+const NETWORK = "https://devnet.helius-rpc.com/?api-key=0d877281-6ed1-4d0c-94d0-aa2d396aee2e"
 const ESCROW_SEED = "escrow"
+const DEFAULT_PUBKEY = new PublicKey(new Uint8Array(32))
 
 // ============================================
 // TYPES
@@ -33,6 +35,7 @@ export interface EscrowAccount {
   createdAt: BN
   description: string
   bump: number
+  metadata?: EscrowMetadata
 }
 
 export interface TransactionResult {
@@ -158,19 +161,21 @@ export const requestAirdrop = async (wallet: WalletContextState, amount: number 
 export const createEscrow = async (
   wallet: WalletContextState,
   amountSol: number,
-  description: string
+  description: string,
+  receiver?: string
 ): Promise<TransactionResult> => {
   if (!wallet.publicKey) throw new Error("Wallet not connected")
 
   const program = getProgram(wallet)
   const amount = solToLamports(amountSol)
+  const receiverPubkey = receiver ? new PublicKey(receiver) : DEFAULT_PUBKEY
 
   // Generate unique escrow ID using timestamp
   const escrowId = new BN(Date.now())
   const [escrowPDA] = deriveEscrowPDA(wallet.publicKey, escrowId)
 
   const signature = await program.methods
-    .createEscrow(amount, description, escrowId)
+    .createEscrow(amount, description, escrowId, receiverPubkey)
     .accounts({
       escrow: escrowPDA,
       client: wallet.publicKey,
@@ -443,7 +448,39 @@ export const fetchOpenEscrows = async (
 }
 
 // ============================================
+// METADATA HELPERS
+// ============================================
+
+export async function resolveEscrowMetadata(
+  escrows: EscrowAccount[]
+): Promise<EscrowAccount[]> {
+  const results = await Promise.all(
+    escrows.map(async (e) => {
+      const cid = extractCid(e.description)
+      if (!cid) return e
+      const metadata = await fetchMetadata(cid)
+      return metadata ? { ...e, metadata } : e
+    })
+  )
+  return results
+}
+
+export function getEscrowTitle(escrow: EscrowAccount): string {
+  if (escrow.metadata?.title) return escrow.metadata.title
+  const desc = escrow.description
+  if (desc.startsWith("ipfs://")) return "Escrow"
+  return desc.length > 50 ? desc.slice(0, 50) + "..." : desc
+}
+
+export function getEscrowDescription(escrow: EscrowAccount): string {
+  if (escrow.metadata?.description) return escrow.metadata.description
+  if (escrow.description.startsWith("ipfs://")) return ""
+  return escrow.description
+}
+
+// ============================================
 // UTILITY EXPORTS
 // ============================================
 
 export { PROGRAM_ID, NETWORK, LAMPORTS_PER_SOL }
+export type { EscrowMetadata }

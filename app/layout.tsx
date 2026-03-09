@@ -7,8 +7,8 @@ import { WalletContextProvider } from "@/components/wallet-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Trustify - Blockchain-Powered Freelancing by Yogeshwaran",
-  description: "Secure contracts, escrow protection, milestone payments",
+  title: "Trustify - Decentralized Payment Escrow Middleware on Solana",
+  description: "Universal payment escrow protocol. Secure any transaction with Solana smart contracts.",
     generator: 'Yogeshwaran'
 }
 

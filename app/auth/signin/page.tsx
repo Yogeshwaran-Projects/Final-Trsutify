@@ -15,7 +15,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (wallet.connected) {
-      router.push("/dashboard/client")
+      router.push("/dashboard/sender")
     }
   }, [wallet.connected, router])
 
@@ -56,21 +56,21 @@ export default function SignInPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Link href="/dashboard/client">
+              <Link href="/dashboard/sender">
                 <Button
                   variant="outline"
                   className="w-full border-white/20 text-white hover:bg-white/10 bg-transparent"
                 >
-                  Client
+                  Sender
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
-              <Link href="/dashboard/freelancer">
+              <Link href="/dashboard/receiver">
                 <Button
                   variant="outline"
                   className="w-full border-white/20 text-white hover:bg-white/10 bg-transparent"
                 >
-                  Freelancer
+                  Receiver
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
