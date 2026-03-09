@@ -10,7 +10,7 @@ import { extractCid, fetchMetadata, type EscrowMetadata } from "./ipfs"
 
 let _programId: PublicKey | null = null
 const getProgramId = () => {
-  if (!_programId) _programId = new PublicKey((idl as any).address ?? (idl as any).metadata?.address)
+  if (!_programId) _programId = new PublicKey(idl.metadata.address)
   return _programId
 }
 const NETWORK = "https://devnet.helius-rpc.com/?api-key=0d877281-6ed1-4d0c-94d0-aa2d396aee2e"
