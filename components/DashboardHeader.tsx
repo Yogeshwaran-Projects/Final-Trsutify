@@ -60,7 +60,7 @@ export function DashboardHeader({ onRefresh }: DashboardHeaderProps) {
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-0.5"><Image src="/logo.png" alt="Trustify" width={28} height={28} className="w-full h-full object-contain rounded-md" /></div>
-          <span className="font-semibold text-lg text-white">Trustify</span>
+          <span className="font-semibold text-base sm:text-lg text-white">Trustify</span>
         </Link>
 
         <Link
@@ -77,7 +77,7 @@ export function DashboardHeader({ onRefresh }: DashboardHeaderProps) {
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {wallet.publicKey && (
           <>
             <Button

@@ -47,6 +47,7 @@ pub mod trustify {
         escrow.escrow_id = escrow_id;
         escrow.created_at = Clock::get()?.unix_timestamp;
         escrow.description = description.clone();
+        escrow.submission_cid = String::new();
         escrow.bump = ctx.bumps.escrow;
 
         emit!(EscrowCreated {
@@ -88,8 +89,8 @@ pub mod trustify {
         Ok(())
     }
 
-    /// Freelancer submits work for review
-    pub fn submit_work(ctx: Context<SubmitWork>) -> Result<()> {
+    /// Freelancer submits work for review with proof (IPFS CID)
+    pub fn submit_work(ctx: Context<SubmitWork>, submission_cid: String) -> Result<()> {
         let escrow = &mut ctx.accounts.escrow;
 
         require!(
@@ -100,8 +101,13 @@ pub mod trustify {
             ctx.accounts.freelancer.key() == escrow.freelancer,
             EscrowError::UnauthorizedFreelancer
         );
+        require!(
+            !submission_cid.is_empty(),
+            EscrowError::EmptySubmissionCid
+        );
 
         escrow.status = EscrowStatus::Submitted;
+        escrow.submission_cid = submission_cid;
 
         emit!(WorkSubmitted {
             escrow: ctx.accounts.escrow.key(),
@@ -309,6 +315,8 @@ pub struct Escrow {
     pub created_at: i64,
     #[max_len(200)]
     pub description: String,
+    #[max_len(200)]
+    pub submission_cid: String,
     pub bump: u8,
 }
 
@@ -399,4 +407,7 @@ pub enum EscrowError {
 
     #[msg("Unauthorized caller for this operation")]
     UnauthorizedCaller,
+
+    #[msg("Submission CID cannot be empty")]
+    EmptySubmissionCid,
 }

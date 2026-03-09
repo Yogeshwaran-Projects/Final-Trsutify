@@ -188,6 +188,10 @@ export type Trustify = {
         {
           "name": "escrowId",
           "type": "u64"
+        },
+        {
+          "name": "receiver",
+          "type": "pubkey"
         }
       ]
     },
@@ -308,7 +312,7 @@ export type Trustify = {
     {
       "name": "submitWork",
       "docs": [
-        "Freelancer submits work for review"
+        "Freelancer submits work for review with proof (IPFS CID)"
       ],
       "discriminator": [
         158,
@@ -356,7 +360,12 @@ export type Trustify = {
           "signer": true
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "submissionCid",
+          "type": "string"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -499,6 +508,11 @@ export type Trustify = {
       "code": 6008,
       "name": "unauthorizedCaller",
       "msg": "Unauthorized caller for this operation"
+    },
+    {
+      "code": 6009,
+      "name": "emptySubmissionCid",
+      "msg": "Submission CID cannot be empty"
     }
   ],
   "types": [
@@ -553,6 +567,10 @@ export type Trustify = {
           },
           {
             "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "submissionCid",
             "type": "string"
           },
           {
@@ -618,6 +636,10 @@ export type Trustify = {
           {
             "name": "description",
             "type": "string"
+          },
+          {
+            "name": "receiver",
+            "type": "pubkey"
           }
         ]
       }

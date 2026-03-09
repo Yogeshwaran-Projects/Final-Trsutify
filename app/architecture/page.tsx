@@ -369,7 +369,7 @@ function EscrowWalkthrough() {
       </div>
 
       {/* Right: Terminal */}
-      <div className="rounded-2xl border border-white/10 bg-[#0c0c0e] overflow-hidden sticky top-24">
+      <div className="rounded-2xl border border-white/10 bg-[#0c0c0e] overflow-hidden sticky top-20 sm:top-24">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-white/10" />
@@ -378,7 +378,7 @@ function EscrowWalkthrough() {
           </div>
           <span className="text-xs text-neutral-500 ml-2">on-chain activity</span>
         </div>
-        <div className="p-5 font-mono text-sm min-h-[260px] space-y-1">
+        <div className="p-5 font-mono text-sm min-h-[200px] sm:min-h-[260px] space-y-1">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeStep}
@@ -438,7 +438,7 @@ function RPCVisualization() {
         </p>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { value: "50K", unit: "req/day", label: "Free tier" },
             { value: "<100", unit: "ms", label: "Latency" },
@@ -466,7 +466,7 @@ function RPCVisualization() {
         initial={{ opacity: 0, x: 40 }}
         animate={isInView ? { opacity: 1, x: 0 } : {}}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="rounded-2xl border border-white/10 bg-[#0c0c0e] p-6 space-y-6"
+        className="rounded-2xl border border-white/10 bg-[#0c0c0e] p-4 sm:p-6 space-y-6"
       >
         {/* Public RPC lane */}
         <div>
@@ -623,7 +623,7 @@ function PinataVisualization() {
           initial={{ opacity: 0, x: 30 }}
           animate={isInView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex-[2] rounded-2xl lg:rounded-l-none border border-white/10 bg-[#0c0c0e] overflow-hidden"
+          className="flex-[2] rounded-2xl lg:rounded-l-none border border-white/10 bg-[#0c0c0e] overflow-hidden overflow-x-auto"
         >
           <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
             <div className="flex gap-1.5">
@@ -653,7 +653,7 @@ function PinataVisualization() {
       </div>
 
       {/* File cards */}
-      <div className="grid sm:grid-cols-3 gap-4 mt-8">
+      <div className="grid sm:grid-cols-3 gap-2 sm:gap-4 mt-8">
         {[
           { name: "figma-designs.fig", size: "4.2 MB", icon: FileCode },
           { name: "assets.zip", size: "12.8 MB", icon: Package },
@@ -858,7 +858,7 @@ export default function Checkout() {
         <div className="p-5 font-mono text-sm leading-6 overflow-x-auto">
           {codeLines.map((line, i) => (
             <div key={i} className="flex">
-              <span className="text-neutral-600 select-none w-8 text-right mr-4 flex-shrink-0">
+              <span className="text-neutral-600 select-none w-6 sm:w-8 text-right mr-4 flex-shrink-0 text-xs sm:text-sm">
                 {i + 1}
               </span>
               <span>
@@ -900,7 +900,7 @@ function Section({
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6 }}
-      className={`relative z-10 px-6 py-24 md:py-32 ${className}`}
+      className={`relative z-10 px-4 sm:px-6 py-24 md:py-32 ${className}`}
     >
       <div className="max-w-6xl mx-auto">{children}</div>
     </motion.section>
