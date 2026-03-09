@@ -393,20 +393,23 @@ export const fetchClientEscrows = async (
 ): Promise<EscrowAccount[]> => {
   if (!wallet.publicKey) throw new Error("Wallet not connected")
 
-  const program = getProgram(wallet)
-
-  const accounts = await program.account.escrow.all([
-    {
-      memcmp: {
-        offset: 8, // After discriminator
-        bytes: wallet.publicKey.toBase58(),
+  try {
+    const program = getProgram(wallet)
+    const accounts = await program.account.escrow.all([
+      {
+        memcmp: {
+          offset: 8, // After discriminator
+          bytes: wallet.publicKey.toBase58(),
+        },
       },
-    },
-  ])
-
-  return accounts
-    .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
-    .filter((e): e is EscrowAccount => e !== null)
+    ])
+    return accounts
+      .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
+      .filter((e): e is EscrowAccount => e !== null)
+  } catch (e) {
+    console.error("Error fetching client escrows:", e)
+    return []
+  }
 }
 
 /**
@@ -417,20 +420,23 @@ export const fetchFreelancerEscrows = async (
 ): Promise<EscrowAccount[]> => {
   if (!wallet.publicKey) throw new Error("Wallet not connected")
 
-  const program = getProgram(wallet)
-
-  const accounts = await program.account.escrow.all([
-    {
-      memcmp: {
-        offset: 8 + 32, // After discriminator + client pubkey
-        bytes: wallet.publicKey.toBase58(),
+  try {
+    const program = getProgram(wallet)
+    const accounts = await program.account.escrow.all([
+      {
+        memcmp: {
+          offset: 8 + 32, // After discriminator + client pubkey
+          bytes: wallet.publicKey.toBase58(),
+        },
       },
-    },
-  ])
-
-  return accounts
-    .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
-    .filter((e): e is EscrowAccount => e !== null)
+    ])
+    return accounts
+      .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
+      .filter((e): e is EscrowAccount => e !== null)
+  } catch (e) {
+    console.error("Error fetching freelancer escrows:", e)
+    return []
+  }
 }
 
 /**
@@ -439,15 +445,17 @@ export const fetchFreelancerEscrows = async (
 export const fetchOpenEscrows = async (
   wallet: WalletContextState
 ): Promise<EscrowAccount[]> => {
-  const program = getProgram(wallet)
-
-  // Fetch all escrows and filter client-side for "Open" status
-  const accounts = await program.account.escrow.all()
-
-  return accounts
-    .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
-    .filter((e): e is EscrowAccount => e !== null)
-    .filter((escrow) => escrow.status === "Open")
+  try {
+    const program = getProgram(wallet)
+    const accounts = await program.account.escrow.all()
+    return accounts
+      .map((acc) => safeMapEscrow(acc.publicKey, acc.account))
+      .filter((e): e is EscrowAccount => e !== null)
+      .filter((escrow) => escrow.status === "Open")
+  } catch (e) {
+    console.error("Error fetching open escrows:", e)
+    return []
+  }
 }
 
 // ============================================
