@@ -21,6 +21,7 @@ const PARTS = [
   "V: Advanced Topics",
   "VI: Comparisons & Context",
   "VII: Reference",
+  "VIII: The Kid-Friendly Guide",
 ]
 
 const TOC: TocItem[] = [
@@ -54,6 +55,16 @@ const TOC: TocItem[] = [
   { id: "s28", title: "Environment Variables", part: PARTS[5], partIndex: 5 },
   { id: "s29", title: "Edge Cases & Errors", part: PARTS[6], partIndex: 6 },
   { id: "s30", title: "Glossary", part: PARTS[6], partIndex: 6 },
+  { id: "s31", title: "How Trustify Works", part: PARTS[7], partIndex: 7 },
+  { id: "s32", title: "The Magic Fingerprint (SHA-256)", part: PARTS[7], partIndex: 7 },
+  { id: "s33", title: "The Unstoppable Clock (Proof of History)", part: PARTS[7], partIndex: 7 },
+  { id: "s34", title: "The Magical Locker (PDA)", part: PARTS[7], partIndex: 7 },
+  { id: "s35", title: "The Avalanche Effect", part: PARTS[7], partIndex: 7 },
+  { id: "s36", title: "Keys & Signatures (ed25519)", part: PARTS[7], partIndex: 7 },
+  { id: "s37", title: "The File Fingerprint (IPFS & CIDs)", part: PARTS[7], partIndex: 7 },
+  { id: "s38", title: "The Board Game (State Machine)", part: PARTS[7], partIndex: 7 },
+  { id: "s39", title: "Why Solana is So Fast", part: PARTS[7], partIndex: 7 },
+  { id: "s40", title: "The Complete Story", part: PARTS[7], partIndex: 7 },
 ]
 
 // ============================================
@@ -1958,6 +1969,642 @@ Compare:
                 </div>
               ))}
             </div>
+          </Section>
+
+          {/* ==================== PART VIII ==================== */}
+          <PartHeader title="Part VIII: The Kid-Friendly Guide" subtitle="Every algorithm and concept explained so simply a 5-year-old gets it" />
+
+          {/* Section 31 */}
+          <Section id="s31" num={31} title="How Trustify Works &mdash; The Simple Story">
+            <p>
+              Imagine Ravi wants to hire Priya to draw a picture for him. But they don&apos;t trust each other:
+            </p>
+            <ul className="list-disc list-inside space-y-2 ml-4">
+              <li>Ravi is scared: &quot;What if I pay and Priya never draws?&quot;</li>
+              <li>Priya is scared: &quot;What if I draw and Ravi never pays?&quot;</li>
+            </ul>
+            <p>
+              So they use Trustify &mdash; a <strong>robot teacher</strong> that both of them trust.
+            </p>
+            <Diagram>{`Step 1: Ravi gives his money to the Robot Teacher
+         Ravi's wallet: 10 SOL → 9 SOL
+         Robot's locker: 0 SOL → 1 SOL       "I'll hold this safely!"
+
+Step 2: Priya sees the job and says "I'll do it!"
+         Robot writes down: "Priya is the artist now"
+
+Step 3: Priya draws the picture and shows proof
+         Robot writes down: "Priya submitted her work"
+
+Step 4: Ravi looks at the picture and says "Looks great!"
+         Robot opens the locker and gives Priya the money:
+         Robot's locker: 1 SOL → 0 SOL
+         Priya's wallet: 5 SOL → 6 SOL       "Here you go, Priya!"
+
+Everyone is happy. Nobody got cheated.`}</Diagram>
+            <InsightBox>
+              <p className="text-neutral-300">
+                The &quot;Robot Teacher&quot; is our <strong>smart contract</strong> on Solana. The &quot;locker&quot; is a <strong>PDA</strong> (Program Derived Address). Nobody has the key to the locker &mdash; not Ravi, not Priya, not even the people who built the robot. Only the robot&apos;s rules can open it.
+              </p>
+            </InsightBox>
+
+            <Sub>What If Something Goes Wrong?</Sub>
+            <Diagram>{`What if Priya never does the work?
+  → Ravi clicks "Cancel" → Robot gives money back to Ravi
+    (But ONLY if Priya hasn't started yet!)
+
+What if Priya does the work but Ravi won't pay?
+  → Priya clicks "Dispute" → A grown-up (arbitrator) helps decide
+
+What if Ravi tries to cancel AFTER Priya started working?
+  → Robot says "NO! Priya already started. You can't take the money back."
+    (This protects workers from unfair bosses)`}</Diagram>
+          </Section>
+
+          {/* Section 32 */}
+          <Section id="s32" num={32} title="The Magic Fingerprint Machine (SHA-256)">
+            <p>
+              Imagine you have a magic machine. You put ANYTHING into it &mdash; a word, a picture, a whole book &mdash; and it spits out a <strong>fingerprint</strong>. A unique code that&apos;s always exactly 64 characters long.
+            </p>
+            <Code>{`Put in: "Hello"     → 185f8db32271fe25f561a6fc938b2e264...
+Put in: "Hello!"    → 334d016f755cd6dc58c53a86e183882f4...
+Put in: "hello"     → 2cf24dba5fb0a30e26e83b2ac5b9e29e1...
+
+Change just ONE tiny thing → completely different fingerprint!`}</Code>
+
+            <Sub>3 Rules of the Magic Machine</Sub>
+            <div className="space-y-4">
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">Rule 1: Same input = same fingerprint, ALWAYS</p>
+                <p className="text-neutral-400 text-sm mt-1">Put &quot;Hello&quot; in a million times and you get the exact same code every single time. Like how your real fingerprint never changes.</p>
+              </div>
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">Rule 2: Can&apos;t go backwards (one-way door)</p>
+                <p className="text-neutral-400 text-sm mt-1">If someone gives you the fingerprint, you CANNOT figure out what was put in. It&apos;s like a door you can only walk through in one direction.</p>
+              </div>
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">Rule 3: No twins (collision-resistant)</p>
+                <p className="text-neutral-400 text-sm mt-1">It&apos;s practically impossible for two different inputs to give the same fingerprint. In the entire history of SHA-256, nobody has EVER found two different inputs with the same output.</p>
+              </div>
+            </div>
+
+            <Sub>Where We Use It in Trustify</Sub>
+            <Diagram>{`1. CREATING THE LOCKER ADDRESS (PDA)
+   SHA-256("escrow" + Ravi's wallet + job number) → Locker #4521
+   Same Ravi + same job = same locker. Every time. No randomness.
+
+2. ACCOUNT LABELS (Discriminator)
+   SHA-256("account:Escrow") → take first 8 bytes → [55, 167, 209...]
+   Like a sticker on the locker: "This is an ESCROW locker, not something else"
+
+3. FILE FINGERPRINTS (IPFS CIDs)
+   SHA-256(file contents) → becomes the file's address
+   Change one word? Different fingerprint. PROVES nobody tampered.
+
+4. SOLANA'S CLOCK (Proof of History)
+   SHA-256 running non-stop, millions of times per second
+   Creates an uncheatble timeline for every transaction`}</Diagram>
+
+            <Sub>Why SHA-256 Specifically?</Sub>
+            <Table
+              headers={["Feature", "SHA-256"]}
+              rows={[
+                ["Speed", "Fast enough for 65,000 transactions/second"],
+                ["Security", "Would take all computers on Earth billions of years to crack"],
+                ["Output size", "256 bits (32 bytes) — small enough to store cheaply"],
+                ["Track record", "Used since 2001 by Bitcoin, Solana, and the entire internet (HTTPS)"],
+                ["Collisions found", "ZERO. Ever. In 25 years."],
+              ]}
+            />
+            <InsightBox>
+              <p className="text-neutral-300">
+                SHA-256 is the <strong>trust machine</strong>. Our entire product &mdash; locker addresses, account labels, file integrity, time ordering &mdash; is built on this one guarantee: <em>same input = same output, always, and you can&apos;t fake it</em>.
+              </p>
+            </InsightBox>
+          </Section>
+
+          {/* Section 33 */}
+          <Section id="s33" num={33} title="The Unstoppable Clock (Proof of History)">
+            <Sub>The Problem: Nobody Has a Shared Clock</Sub>
+            <p>
+              Imagine 10 kids in different rooms, each writing a diary. They all write events but nobody has a clock. Now someone asks: &quot;Did Ravi submit his homework BEFORE or AFTER Priya?&quot; Nobody knows. There&apos;s no shared clock.
+            </p>
+            <p>
+              This is the exact problem with blockchains &mdash; thousands of computers around the world need to agree on <strong>what happened first</strong>.
+            </p>
+
+            <Sub>How Bitcoin Solves It (The Slow Way)</Sub>
+            <p>
+              Bitcoin says: &quot;Everyone, solve this really hard math puzzle. Whoever solves it first gets to write the next page.&quot; This works but:
+            </p>
+            <ul className="list-disc list-inside space-y-1 ml-4">
+              <li>Wastes massive electricity</li>
+              <li>Takes <strong>10 minutes</strong> per page (block)</li>
+              <li>Only ~7 transactions per second</li>
+            </ul>
+
+            <Sub>How Solana Solves It (Proof of History)</Sub>
+            <p>
+              Solana&apos;s founder had a clever idea: <strong>what if we made a stopwatch using SHA-256?</strong>
+            </p>
+            <Code>{`Start:  hash_1 = SHA-256("start")
+        hash_2 = SHA-256(hash_1)
+        hash_3 = SHA-256(hash_2)
+        hash_4 = SHA-256(hash_3)
+        ...running non-stop, millions per second...`}</Code>
+
+            <Sub>Why This Is a Clock</Sub>
+            <p>
+              The key insight: <strong>you CANNOT skip ahead.</strong>
+            </p>
+            <Diagram>{`To get hash_1000, you MUST compute:
+  hash_1, then hash_2, then hash_3, ... ALL the way to hash_1000
+
+There's no shortcut. No cheat code. No "jump to hash_1000."
+Each hash is PROOF that real time passed to compute it.
+
+It's like a magic notebook:
+  • Page 2 can ONLY exist after page 1
+  • Page 100 can ONLY exist after pages 1 through 99
+  • Anyone can check that all pages are in order (fast to verify)`}</Diagram>
+
+            <Sub>How Transactions Fit In</Sub>
+            <Diagram>{`The PoH chain is running non-stop...
+
+  hash_400000 = SHA-256(hash_399999)
+  hash_400001 = SHA-256(hash_400000)
+     ↑
+     └── Ravi's escrow creation STAMPED HERE
+  hash_400002 = SHA-256(hash_400001)
+  hash_400003 = SHA-256(hash_400002)
+     ↑
+     └── Priya's acceptance STAMPED HERE
+  hash_400004 = SHA-256(hash_400003)
+
+Now EVERYONE knows: Ravi came BEFORE Priya.
+It's baked into the hash chain. Can't rearrange. Can't lie.`}</Diagram>
+
+            <Sub>The Stamp Machine Analogy</Sub>
+            <p>
+              Imagine a teacher has a special stamp machine:
+            </p>
+            <ul className="list-disc list-inside space-y-1 ml-4">
+              <li>The machine stamps <InlineCode>STAMP #1</InlineCode>, then <InlineCode>STAMP #2</InlineCode>, then <InlineCode>STAMP #3</InlineCode>...</li>
+              <li>Each stamp can ONLY come after the previous one</li>
+              <li>When Ravi turns in homework, teacher stamps it &rarr; <strong>STAMP #4521</strong></li>
+              <li>When Priya turns in homework, teacher stamps it &rarr; <strong>STAMP #4523</strong></li>
+              <li>Now everyone knows: Ravi was first. No argument. No debate.</li>
+              <li>Any student can count the stamps and verify the order</li>
+            </ul>
+            <p>That stamp machine = <strong>Proof of History</strong></p>
+
+            <Sub>Why This Makes Solana So Fast</Sub>
+            <Diagram>{`WITHOUT Proof of History (Bitcoin, Ethereum):
+  Transaction arrives → Validators ask each other "What order?"
+  → Everyone debates and votes → Eventually they agree → Block written
+  All that TALKING takes time → 10 min (Bitcoin) / 12 sec (Ethereum)
+
+WITH Proof of History (Solana):
+  Transaction arrives → Validator stamps it into the PoH chain → Done!
+  → Other validators verify (just recompute hashes — fast!)
+  No debate needed → 400ms blocks → 65,000 transactions per second`}</Diagram>
+
+            <Sub>Why This Matters for Trustify</Sub>
+            <EdgeBox>
+              <p className="text-neutral-300">
+                <strong>Two freelancers try to accept the same escrow at the exact same moment:</strong> Without PoH, validators would argue about who was first. With PoH: Freelancer A gets stamped at hash_N, Freelancer B gets stamped at hash_N+2. A was first. Period. B gets an &quot;InvalidStatus&quot; error. No debate, no frontrunning, no unfairness.
+              </p>
+            </EdgeBox>
+          </Section>
+
+          {/* Section 34 */}
+          <Section id="s34" num={34} title="The Magical Locker (PDA &mdash; Program Derived Address)">
+            <Sub>Normal Wallet = Your Piggy Bank at Home</Sub>
+            <p>
+              You have a piggy bank. You have the key. You can open it anytime and take money out. That&apos;s a normal Solana wallet &mdash; you have the private key, you control the money.
+            </p>
+
+            <Sub>PDA = A Magical School Locker</Sub>
+            <p>
+              Imagine your school has a special locker. Here&apos;s what makes it magical:
+            </p>
+            <div className="space-y-3">
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">1. Nobody has the key</p>
+                <p className="text-neutral-400 text-sm mt-1">Not you, not your friend, not even the teacher. The key literally doesn&apos;t exist. Mathematically impossible. (The address is &quot;off the curve&quot; &mdash; no private key can correspond to it.)</p>
+              </div>
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">2. Only the school&apos;s Rule Book can open it</p>
+                <p className="text-neutral-400 text-sm mt-1">The &quot;Rule Book&quot; is our smart contract. It says: &quot;Only open for Ravi IF no one accepted yet (cancel).&quot; &quot;Only open for Priya IF Ravi says work is done (release).&quot;</p>
+              </div>
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">3. The locker number comes from a magic formula</p>
+                <p className="text-neutral-400 text-sm mt-1">Put in &quot;escrow&quot; + your name + a number &rarr; always gives the SAME locker number. No randomness. Totally predictable.</p>
+              </div>
+            </div>
+
+            <Sub>The Formula</Sub>
+            <Code>{`Ingredients:
+  "escrow"         (a constant word — like a secret recipe name)
+  + Ravi's wallet  (32 bytes — Ravi's unique identity)
+  + Job #12345     (8 bytes — the escrow ID)
+
+Stir them together with SHA-256...
+
+Result: Locker address = 7xKp9...mZ3R (a Solana address)
+
+Same Ravi + same job number = same locker. EVERY TIME.
+Different person = different locker.
+Different job number = different locker.`}</Code>
+
+            <Sub>The &quot;Off the Curve&quot; Magic</Sub>
+            <Diagram>{`Normal wallet addresses sit ON the ed25519 elliptic curve:
+  → For every point ON the curve, a private key EXISTS
+  → If our locker landed on the curve, someone could find the key = BAD
+
+PDA addresses are OFF the curve:
+  → SHA-256(seeds) lands off the curve
+  → No private key can possibly exist
+  → ONLY our smart contract code can move the money
+
+How we ensure "off curve":
+  1. Try bump = 255, compute SHA-256(seeds + bump)
+  2. Is it on the curve? YES → try bump = 254
+  3. Is it on the curve? NO → SAFE! Use this address.
+  4. Store the bump (usually 253-255) so we don't recalculate`}</Diagram>
+
+            <InsightBox>
+              <p className="text-neutral-300">
+                This is why Trustify is trustless. Even the developers who built the app CANNOT steal money from a PDA. There is no secret backdoor. The math guarantees it. The only way money moves is through the smart contract&apos;s rules.
+              </p>
+            </InsightBox>
+          </Section>
+
+          {/* Section 35 */}
+          <Section id="s35" num={35} title="The Avalanche Effect">
+            <p>
+              The avalanche effect is one of the most beautiful properties in cryptography. Change <strong>one tiny bit</strong> of the input, and the output changes <strong>completely and unpredictably</strong>. Like flicking one domino and watching the entire room collapse into a totally different pattern.
+            </p>
+
+            <Code>{`Input: "Hello World"
+SHA-256: a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e
+
+Input: "Hello World!"   (just added an exclamation mark!)
+SHA-256: 7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069
+
+Input: "Hello world"    (just changed W to lowercase w!)
+SHA-256: 64ec88ca00b268e5ba1a35678a1b5316d212f4f366b2477232534a8aeca37f3c
+
+Every single character of the output is different!
+You CANNOT predict how the output will change.`}</Code>
+
+            <Sub>Why This Matters</Sub>
+            <Diagram>{`In a blockchain, each block contains the previous block's hash:
+
+Block 1: data="Alice pays Bob $10"    hash=a591a6...
+Block 2: data="Bob pays Carol $5"     prev_hash=a591a6...  hash=7f83b1...
+Block 3: data="Carol pays Dave $3"    prev_hash=7f83b1...  hash=64ec88...
+
+Now a hacker tries to change Block 1 ("Alice pays Bob $10" → "$0"):
+
+Block 1: data="Alice pays Bob $0"     hash=????????  ← COMPLETELY DIFFERENT!
+Block 2: prev_hash=a591a6... ← DOESN'T MATCH Block 1's new hash!
+Block 3: prev_hash=7f83b1... ← DOESN'T MATCH Block 2's new hash!
+
+ONE change broke EVERYTHING after it = AVALANCHE EFFECT
+The hacker would need to recompute EVERY block after the change.
+On Solana, that means outrunning thousands of validators.
+Mathematically impossible.`}</Diagram>
+
+            <Sub>Real-World Analogy</Sub>
+            <p>
+              Imagine a chain of 1000 padlocks, where each lock&apos;s combination is based on the previous lock. If you change lock #1&apos;s combination, every lock after it has the wrong combination. You&apos;d need to break and re-set all 999 remaining locks before anyone notices. But new locks are being added every 400 milliseconds. You can never catch up.
+            </p>
+
+            <Sub>Where the Avalanche Effect Protects Trustify</Sub>
+            <Table
+              headers={["Where", "What It Protects"]}
+              rows={[
+                ["Block chain", "Can't change past transactions (escrow creation, payments)"],
+                ["IPFS CIDs", "Can't tamper with submitted work files — hash changes = different CID"],
+                ["PDA addresses", "Can't guess or forge locker addresses — different seeds = totally different address"],
+                ["Discriminators", "Can't confuse account types — one byte off = completely different 8-byte label"],
+                ["Proof of History", "Can't insert fake timestamps — breaks the entire hash chain after that point"],
+              ]}
+            />
+          </Section>
+
+          {/* Section 36 */}
+          <Section id="s36" num={36} title="Keys & Signatures (ed25519) &mdash; Your Digital Stamp">
+            <Sub>The Lock and Key Analogy</Sub>
+            <p>
+              You have two things:
+            </p>
+            <Diagram>{`🔑 PRIVATE KEY (Secret — only YOU have it)
+   Like the key to your diary. Never show anyone. Ever.
+
+🔒 PUBLIC KEY (Shared with everyone — it's your wallet address)
+   Like your home address. Anyone can know it. They can send you
+   letters (SOL), but they can't get inside (steal your money).`}</Diagram>
+
+            <Sub>How Signing Works</Sub>
+            <p>
+              When Ravi clicks &quot;Release Funds&quot; in Trustify:
+            </p>
+            <Diagram>{`1. The app creates a message: "Move 1 SOL from Locker #4521 to Priya"
+
+2. Ravi's wallet uses his PRIVATE KEY to create a SIGNATURE:
+   Private Key + Message → 🖋️ Signature (64 bytes of math)
+
+3. The signature is sent to Solana along with the message
+
+4. Solana uses Ravi's PUBLIC KEY to CHECK the signature:
+   Public Key + Message + Signature → ✅ Valid! or ❌ Fake!
+
+5. If valid → Solana knows it was REALLY Ravi, not an impersonator
+   If invalid → Transaction REJECTED. Nobody's money moves.`}</Diagram>
+
+            <Sub>Why This Is Unbreakable</Sub>
+            <div className="space-y-3">
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">Can someone guess your private key?</p>
+                <p className="text-neutral-400 text-sm mt-1">Your private key is 32 random bytes = 256 bits. The number of possible keys is 2^256 &mdash; that&apos;s more than the number of atoms in the observable universe. Even if every computer on Earth tried for billions of years, they couldn&apos;t guess it.</p>
+              </div>
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">Can someone fake your signature?</p>
+                <p className="text-neutral-400 text-sm mt-1">The signature depends on BOTH the private key AND the specific message. Even if someone saw 1 million of your signatures on other messages, they CANNOT forge a signature for a new message without your private key.</p>
+              </div>
+              <div className="border border-neutral-800 rounded-lg p-4">
+                <p className="text-white font-semibold">Can someone figure out your private key from your public key?</p>
+                <p className="text-neutral-400 text-sm mt-1">Going from public key &rarr; private key requires solving the &quot;discrete logarithm problem&quot; on an elliptic curve. No known algorithm can do this efficiently. It&apos;s a one-way trapdoor function.</p>
+              </div>
+            </div>
+
+            <Sub>Why ed25519 Specifically?</Sub>
+            <Table
+              headers={["Feature", "ed25519 (Solana)", "ECDSA (Ethereum)"]}
+              rows={[
+                ["Speed", "~70,000 verifications/sec", "~30,000 verifications/sec"],
+                ["Signature size", "64 bytes", "65 bytes"],
+                ["Deterministic", "Yes (same message = same signature)", "No (needs random number — dangerous if RNG is bad)"],
+                ["Timing attacks", "Immune (constant-time)", "Vulnerable if not careful"],
+                ["Key size", "32 bytes", "32 bytes"],
+              ]}
+            />
+          </Section>
+
+          {/* Section 37 */}
+          <Section id="s37" num={37} title="The File Fingerprint (IPFS & CIDs)">
+            <Sub>The Old Way: Location Addressing</Sub>
+            <p>
+              Think of the normal internet like giving directions: &quot;Go to House #42 on Main Street and ask for the red book.&quot; But what if House #42 burns down? The red book is gone. What if the owner replaces the red book with a blue book? Same address, different book. You&apos;d never know.
+            </p>
+
+            <Sub>The IPFS Way: Content Addressing</Sub>
+            <p>
+              IPFS is different. Instead of saying WHERE something is, you describe WHAT it is:
+            </p>
+            <Diagram>{`Old way:  "Get the file at https://example.com/report.pdf"
+          → Server dies? File GONE.
+          → Server changes file? Same URL, different file. SNEAKY.
+
+IPFS way: "Get the file whose fingerprint is bafybeig..."
+          → The fingerprint IS the file's SHA-256 hash
+          → Could be stored on ANY computer. Or thousands of computers.
+          → Change one byte of the file? Different fingerprint = different address
+          → IMPOSSIBLE to tamper without changing the address`}</Diagram>
+
+            <Sub>How We Use It in Trustify</Sub>
+            <Diagram>{`When Ravi creates an escrow:
+  1. Ravi fills out: title, description, attached files
+  2. We bundle it into a JSON file
+  3. Upload JSON to IPFS → get back CID: bafybeiabc123...
+  4. Store "ipfs://bafybeiabc123..." on-chain in the escrow account
+
+When Priya submits work:
+  1. Priya attaches deliverable files + GitHub link
+  2. We bundle into a submission JSON
+  3. Upload to IPFS → get back CID: bafybeixyz789...
+  4. Store the CID on-chain
+
+Now there's an IMMUTABLE CHAIN OF EVIDENCE:
+  On-chain CID → points to IPFS JSON → contains file CIDs → actual files
+  Nobody can change any of it without breaking the chain of fingerprints.`}</Diagram>
+
+            <InsightBox>
+              <p className="text-neutral-300">
+                This is why a freelancer can PROVE they submitted work: the CID was stored on-chain at a specific blockchain timestamp. The CID is a fingerprint of the exact files they submitted. Nobody &mdash; not the freelancer, not the client, not us &mdash; can change what was submitted after the fact.
+              </p>
+            </InsightBox>
+          </Section>
+
+          {/* Section 38 */}
+          <Section id="s38" num={38} title="The Board Game (State Machine)">
+            <p>
+              The escrow is like a board game with <strong>6 spaces</strong> and <strong>strict rules</strong> about which moves are allowed. You can only move forward (mostly), and some moves are one-way streets.
+            </p>
+
+            <Diagram>{`THE ESCROW BOARD GAME
+
+  ┌──────────┐   Freelancer    ┌──────────────┐   Freelancer    ┌───────────┐   Client      ┌───────────┐
+  │   OPEN   │   accepts       │ IN PROGRESS  │   submits      │ SUBMITTED │   releases   │ COMPLETED │
+  │  (Start) │───────────────→ │  (Working)   │──────────────→ │  (Review) │────────────→ │  (Done!)  │
+  └──────────┘                 └──────────────┘                └───────────┘              └───────────┘
+       │                              │                              │
+       │ Client cancels               │ Either party                 │ Either party
+       │ (refund)                     │ disputes                     │ disputes
+       ▼                              ▼                              ▼
+  ┌───────────┐                ┌───────────┐                  ┌───────────┐
+  │ CANCELLED │                │ DISPUTED  │                  │ DISPUTED  │
+  │ (Game Off)│                │ (Problem!)│                  │ (Problem!)│
+  └───────────┘                └───────────┘                  └───────────┘
+
+GAME OVER spaces (no more moves):  COMPLETED ✓   CANCELLED ✗   DISPUTED ⚠`}</Diagram>
+
+            <Sub>The Rules</Sub>
+            <div className="space-y-3">
+              <div className="border border-green-500/20 rounded-lg p-4">
+                <p className="text-green-400 font-semibold text-sm">OPEN &rarr; IN PROGRESS</p>
+                <p className="text-neutral-400 text-sm mt-1">Only a freelancer (not the client!) can make this move. If the escrow is &quot;directed&quot; (specific person invited), only THAT person can accept.</p>
+              </div>
+              <div className="border border-green-500/20 rounded-lg p-4">
+                <p className="text-green-400 font-semibold text-sm">IN PROGRESS &rarr; SUBMITTED</p>
+                <p className="text-neutral-400 text-sm mt-1">Only the assigned freelancer can submit. Must include proof (an IPFS CID). Empty submissions are rejected.</p>
+              </div>
+              <div className="border border-green-500/20 rounded-lg p-4">
+                <p className="text-green-400 font-semibold text-sm">SUBMITTED &rarr; COMPLETED</p>
+                <p className="text-neutral-400 text-sm mt-1">Only the client can release funds. Money flows from the PDA to the freelancer&apos;s wallet. This is the happy ending!</p>
+              </div>
+              <div className="border border-amber-500/20 rounded-lg p-4">
+                <p className="text-amber-400 font-semibold text-sm">OPEN &rarr; CANCELLED</p>
+                <p className="text-neutral-400 text-sm mt-1">Only the client can cancel, and ONLY from Open state. Once a freelancer accepts, cancellation is blocked forever. Money returns to client.</p>
+              </div>
+              <div className="border border-red-500/20 rounded-lg p-4">
+                <p className="text-red-400 font-semibold text-sm">IN PROGRESS or SUBMITTED &rarr; DISPUTED</p>
+                <p className="text-neutral-400 text-sm mt-1">Either the client OR freelancer can raise a dispute. Money stays locked. Needs off-chain resolution by a human.</p>
+              </div>
+            </div>
+
+            <Sub>What Happens If Someone Tries to Cheat?</Sub>
+            <Diagram>{`Freelancer tries to accept an already-accepted escrow:
+  → Status is InProgress, not Open → ERROR: InvalidStatus
+
+Client tries to cancel after freelancer started:
+  → Status is InProgress, not Open → ERROR: CannotCancelInProgress
+
+Random stranger tries to release funds:
+  → Signer is not the client → ERROR: UnauthorizedClient
+
+Freelancer tries to submit empty proof:
+  → CID is empty → ERROR: EmptySubmissionCid
+
+Client tries to be their own freelancer:
+  → Signer equals client → ERROR: ClientCannotBeFreelancer
+
+EVERY cheat attempt is caught by the smart contract. Every time.`}</Diagram>
+          </Section>
+
+          {/* Section 39 */}
+          <Section id="s39" num={39} title="Why Solana is So Fast &mdash; The School Analogy">
+            <p>
+              Imagine three different schools and how they handle homework collection:
+            </p>
+
+            <Sub>Bitcoin School (Slow &mdash; 7 homework/sec)</Sub>
+            <Diagram>{`Teacher: "Solve this impossible math puzzle!"
+Students: *compete for 10 minutes*
+Winner: "I solved it! Here's the homework batch!"
+Teacher: "OK, that batch is official."
+
+Problems:
+  • Only ONE batch every 10 minutes
+  • Massive energy wasted on the puzzle
+  • Everyone else's work was for nothing`}</Diagram>
+
+            <Sub>Ethereum School (Medium &mdash; 30 homework/sec)</Sub>
+            <Diagram>{`Teacher: "Who has the most lunch money staked?"
+Rich student: "Me! I'll collect the homework."
+Teacher: "OK, but everyone must vote on whether this batch is correct."
+*12 seconds of voting*
+Teacher: "Approved! Next batch."
+
+Better, but:
+  • Still need everyone to vote on every batch
+  • Voting takes time (12 seconds)
+  • Can only process them ONE BY ONE`}</Diagram>
+
+            <Sub>Solana School (Fast &mdash; 65,000 homework/sec)</Sub>
+            <Diagram>{`Teacher has 5 superpowers:
+
+1. PROOF OF HISTORY (the stamp machine)
+   A non-stop stamp counter: #1, #2, #3...
+   Every homework gets stamped → instant ordering, no debate
+
+2. GULF STREAM (no homework pile)
+   Students hand homework DIRECTLY to the next teacher
+   No messy pile on the desk → less waiting
+
+3. SEALEVEL (parallel grading)
+   If Ravi's homework and Priya's homework are about different topics,
+   TWO teachers grade them AT THE SAME TIME
+   (In blockchain: non-conflicting transactions run in parallel)
+
+4. TURBINE (fast distribution)
+   Instead of photocopying the whole batch for everyone,
+   give piece 1 to student A, piece 2 to student B, piece 3 to student C
+   They share with each other (like BitTorrent)
+
+5. CLOUDBREAK (organized filing cabinet)
+   All student records in a fast-access filing system
+   Can look up any student's grades instantly
+
+Result: 400ms per batch, 65,000 homework papers per second!`}</Diagram>
+
+            <InsightBox>
+              <p className="text-neutral-300">
+                For Trustify, Solana&apos;s speed means: creating an escrow feels instant (~2 seconds total), costs less than a penny, and can handle thousands of escrows simultaneously. On Bitcoin, one escrow would take 10 minutes and cost $5-50. On Ethereum, 12 seconds and $5-50. On Solana, 400ms and $0.00025.
+              </p>
+            </InsightBox>
+          </Section>
+
+          {/* Section 40 */}
+          <Section id="s40" num={40} title="The Complete Story &mdash; How Every Algorithm Connects">
+            <p>
+              Now let&apos;s see how ALL the kid-friendly concepts work together in one real Trustify transaction:
+            </p>
+            <Diagram>{`RAVI CLICKS "CREATE ESCROW" FOR 1 SOL
+
+Step 1: KEYS & SIGNATURES (ed25519)
+  Ravi's wallet creates a message: "Create escrow, deposit 1 SOL"
+  Ravi's PRIVATE KEY signs it → produces a 64-byte signature
+  Anyone can verify with Ravi's PUBLIC KEY that it was really him
+
+Step 2: THE MAGIC FINGERPRINT (SHA-256)
+  SHA-256("escrow" + Ravi's wallet + job ID) = the locker address (PDA)
+  SHA-256("account:Escrow") first 8 bytes = the account label (discriminator)
+
+Step 3: THE MAGICAL LOCKER (PDA)
+  A new locker is created at the computed address
+  1 SOL moves from Ravi's wallet → into the locker
+  Nobody has the key. Only the rule book (smart contract) can open it.
+
+Step 4: THE FILE FINGERPRINT (IPFS)
+  Task description uploaded to IPFS
+  SHA-256(file) = CID (content address)
+  CID stored on-chain: "ipfs://bafybeiabc..."
+  Proof of what was agreed upon — tamper-proof
+
+Step 5: THE UNSTOPPABLE CLOCK (Proof of History)
+  This transaction gets stamped into Solana's PoH hash chain
+  hash_N → [Ravi's tx inserted] → hash_N+1
+  Everyone agrees on when this happened — uncheatble timestamp
+
+Step 6: THE AVALANCHE EFFECT
+  This block's hash depends on all previous blocks
+  Change Ravi's transaction → this block's hash changes
+  → next block's hash changes → ALL future blocks break
+  → Tampering is mathematically impossible
+
+Step 7: THE BOARD GAME (State Machine)
+  Escrow status: OPEN ✓
+  Waiting for a freelancer to accept...
+
+  ─────────────────────────────────────────────
+
+PRIYA CLICKS "ACCEPT ESCROW"
+
+  Same process: signature verified, PoH timestamp, state changes
+  Status: OPEN → IN PROGRESS
+  Priya is now the assigned freelancer
+  Ravi CANNOT cancel anymore (funds committed)
+
+  ─────────────────────────────────────────────
+
+PRIYA CLICKS "SUBMIT WORK"
+
+  Her deliverables uploaded to IPFS → CID stored on-chain
+  Status: IN PROGRESS → SUBMITTED
+  Immutable proof she submitted specific files at this exact time
+
+  ─────────────────────────────────────────────
+
+RAVI CLICKS "RELEASE FUNDS"
+
+  Signature verified: yes, it's really Ravi
+  Status check: Submitted ✓
+  Client check: Ravi is the client ✓
+  Freelancer check: Priya matches ✓
+
+  💰 1 SOL moves from the PDA locker → Priya's wallet
+  Status: SUBMITTED → COMPLETED
+
+  Everyone is happy. Math protected everyone. No trust needed.`}</Diagram>
+
+            <InsightBox>
+              <p className="text-neutral-300">
+                <strong>That&apos;s the whole product.</strong> Six algorithms working together &mdash; SHA-256 for fingerprints, ed25519 for signatures, PDA for trustless custody, PoH for time ordering, avalanche effect for tamper-proofing, and IPFS for file integrity. Each one is simple on its own. Together, they create a system where two strangers can exchange money for work with zero trust, zero middlemen, and near-zero fees.
+              </p>
+            </InsightBox>
           </Section>
 
           {/* Footer */}
