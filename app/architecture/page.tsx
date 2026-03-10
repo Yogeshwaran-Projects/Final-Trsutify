@@ -913,7 +913,7 @@ export default function ArchitecturePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#09090b] text-white">
       {/* Background effects */}
       <div className="fixed inset-0 z-0 bg-gradient-to-b from-neutral-900/30 via-transparent to-transparent pointer-events-none" />
 
