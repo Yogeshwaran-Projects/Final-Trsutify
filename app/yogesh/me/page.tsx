@@ -840,28 +840,71 @@ pub struct CreateEscrow<'info> {
             </WhyBox>
 
             <Sub>10.2 &mdash; accept_escrow: &quot;Claim the job&quot;</Sub>
-            <Code>{`// Logic:
-1. Verify status == Open
-2. Verify signer != client (can't accept your own escrow)
+            <Code>{`// Rust: Account Constraints
+#[derive(Accounts)]
+pub struct AcceptEscrow<'info> {
+    #[account(
+        mut,
+        seeds = [b"escrow", escrow.client.as_ref(), &escrow.escrow_id.to_le_bytes()],
+        bump = escrow.bump                                       // Verify PDA matches stored bump
+    )]
+    pub escrow: Account<'info, Escrow>,
+    #[account(mut)]
+    pub freelancer: Signer<'info>,                               // Must sign, becomes the worker
+}
+
+// Logic:
+1. Verify status == Open                                         // Can't accept twice
+2. Verify signer != client                                       // Can't accept your own escrow
 3. If escrow.freelancer == Pubkey::default() -> open escrow, set freelancer = signer
    If escrow.freelancer == signer -> directed escrow, allowed
-   Otherwise -> UnauthorizedFreelancer error
+   Otherwise -> UnauthorizedFreelancer error                     // Wrong person for directed escrow
 4. Set status = InProgress
-5. emit!(EscrowAccepted { ... })
+5. emit!(EscrowAccepted { escrow, freelancer })
 
-// No CPI needed. Just account state mutation. Cost: ~5000 lamports tx fee.`}</Code>
+// No CPI needed — pure state mutation. Cost: ~5000 lamports tx fee.
+// TypeScript: program.methods.acceptEscrow()
+//   .accounts({ escrow: escrowPubkey, freelancer: wallet.publicKey }).rpc()`}</Code>
+            <EdgeBox>
+              <p className="text-neutral-300">
+                <strong>Open vs Directed escrows:</strong> If <InlineCode>escrow.freelancer == Pubkey::default()</InlineCode> (all zeros), anyone can accept. If the client specified a receiver at creation, only that exact wallet can accept. This is checked by comparing <InlineCode>escrow.freelancer</InlineCode> with the signer&apos;s public key.
+              </p>
+            </EdgeBox>
 
             <Sub>10.3 &mdash; submit_work: &quot;Here&apos;s my proof&quot;</Sub>
-            <Code>{`// Logic:
-1. Verify status == InProgress
-2. Verify signer == escrow.freelancer
-3. Verify submission_cid is not empty
-4. Set escrow.submission_cid = submission_cid
+            <Code>{`// Rust: Account Constraints
+#[derive(Accounts)]
+pub struct SubmitWork<'info> {
+    #[account(
+        mut,
+        seeds = [b"escrow", escrow.client.as_ref(), &escrow.escrow_id.to_le_bytes()],
+        bump = escrow.bump
+    )]
+    pub escrow: Account<'info, Escrow>,
+    #[account(mut)]
+    pub freelancer: Signer<'info>,
+}
+
+// Logic:
+1. Verify status == InProgress                                  // Must be working on it
+2. Verify signer == escrow.freelancer                           // Only assigned freelancer
+3. Verify !submission_cid.is_empty()                            // Must provide proof
+4. Set escrow.submission_cid = submission_cid                   // Store IPFS CID on-chain
 5. Set status = Submitted
-6. emit!(WorkSubmitted { ... })
+6. emit!(WorkSubmitted { escrow, freelancer })
 
 // The CID stored on-chain is immutable proof that work was submitted
-// at this point in time. Nobody can claim the freelancer didn't submit.`}</Code>
+// at this exact point in blockchain history. Nobody can claim the
+// freelancer didn't submit, and nobody can claim they submitted
+// different work — the CID is a cryptographic fingerprint.
+
+// TypeScript: program.methods.submitWork(submissionCid)
+//   .accounts({ escrow: escrowPubkey, freelancer: wallet.publicKey }).rpc()`}</Code>
+            <InsightBox>
+              <p className="text-neutral-300">
+                The submission CID points to a SubmissionMetadata JSON on IPFS containing file references, GitHub URL, checklist completion, and verification results. This creates a complete, tamper-proof evidence trail: on-chain CID &rarr; IPFS metadata &rarr; individual files.
+              </p>
+            </InsightBox>
 
             <Sub>10.4 &mdash; release_funds: &quot;Pay the worker&quot;</Sub>
             <Code>{`// The critical instruction. Direct lamport manipulation:
@@ -882,13 +925,64 @@ escrow.status = EscrowStatus::Completed;
             </EdgeBox>
 
             <Sub>10.5 &mdash; cancel_escrow: &quot;I changed my mind&quot;</Sub>
-            <p>Same lamport manipulation as release, but refunds to client instead of freelancer. Only works from Open status &mdash; once a freelancer accepted, cancellation is impossible (funds are committed to the agreement).</p>
+            <Code>{`// Rust: Account Constraints
+#[derive(Accounts)]
+pub struct CancelEscrow<'info> {
+    #[account(
+        mut,
+        seeds = [b"escrow", escrow.client.as_ref(), &escrow.escrow_id.to_le_bytes()],
+        bump = escrow.bump
+    )]
+    pub escrow: Account<'info, Escrow>,
+    #[account(mut)]
+    pub client: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
 
-            <Sub>10.6 &mdash; raise_dispute: &quot;Something&apos;s wrong&quot;</Sub>
-            <p>The simplest instruction: just changes status to Disputed. No fund movement, no resolution mechanism on-chain.</p>
+// Logic:
+1. Verify status == Open                                    // CannotCancelInProgress if not
+2. Verify signer == escrow.client                           // Only the client can cancel
+3. Read amount, set status = Cancelled
+4. Direct lamport manipulation (same as release_funds):
+   **escrow.to_account_info().try_borrow_mut_lamports()? -= amount;
+   **client.to_account_info().try_borrow_mut_lamports()? += amount;
+5. emit!(EscrowCancelled { escrow, client, refunded_amount })
+
+// CRITICAL: Cancel only works from Open. Once a freelancer accepts,
+// the client CANNOT pull funds back. This protects freelancers from
+// starting work and then having the rug pulled.`}</Code>
             <WhyBox>
               <p className="text-neutral-300">
-                Dispute resolution is HARD to automate fairly. It requires human judgment. We flag it on-chain (immutable record), resolve off-chain. A future version could add DAO voting or third-party arbitrator selection.
+                The &quot;only cancel from Open&quot; design is intentional. It creates a commitment mechanism: once a freelancer invests time (accepts), the client&apos;s funds are locked. This incentivizes clients to only create escrows they intend to follow through on, and gives freelancers confidence to start working.
+              </p>
+            </WhyBox>
+
+            <Sub>10.6 &mdash; raise_dispute: &quot;Something&apos;s wrong&quot;</Sub>
+            <Code>{`// Rust: Account Constraints
+#[derive(Accounts)]
+pub struct RaiseDispute<'info> {
+    #[account(
+        mut,
+        seeds = [b"escrow", escrow.client.as_ref(), &escrow.escrow_id.to_le_bytes()],
+        bump = escrow.bump
+    )]
+    pub escrow: Account<'info, Escrow>,
+    #[account(mut)]
+    pub caller: Signer<'info>,                              // Either client OR freelancer
+}
+
+// Logic:
+1. Verify status == InProgress || status == Submitted       // Can't dispute Open/Completed/Cancelled
+2. Verify caller == escrow.client || caller == escrow.freelancer  // Only participants
+3. Set status = Disputed
+4. emit!(DisputeRaised { escrow, raised_by: caller })
+
+// No fund movement. No resolution mechanism on-chain.
+// Disputed is a TERMINAL state — no further transitions.
+// Funds remain locked in the PDA until off-chain resolution.`}</Code>
+            <WhyBox>
+              <p className="text-neutral-300">
+                Dispute resolution is HARD to automate fairly. It requires human judgment &mdash; &quot;did the freelancer really deliver what was asked?&quot; is not a question code can answer. We flag it on-chain as an immutable record of when and by whom the dispute was raised, then resolve off-chain. A future version could add DAO-based arbitration, time-locked resolution, or third-party arbitrator selection with staked reputation.
               </p>
             </WhyBox>
           </Section>
@@ -992,15 +1086,79 @@ Example CIDv1: bafybeigdyrzt5sfp7udm7hu76uh7y26nf3...
 
 Change one byte of content -> different hash -> different CID -> it's a DIFFERENT file.`}</Code>
 
-            <Sub>DAG Structure & DHT</Sub>
+            <Sub>DAG Structure (Directed Acyclic Graph)</Sub>
             <p>
-              Large files are split into chunks, organized as a DAG (Directed Acyclic Graph). Each chunk has its own CID. The root CID references all child CIDs. The DHT (Distributed Hash Table) maps CIDs to the network addresses of nodes storing them. When you request a CID, your node queries the DHT to find providers.
+              Large files are split into 256KB chunks, each hashed to get its own CID. These chunks are organized as a DAG &mdash; a tree where parent nodes reference child CIDs. The root CID of the DAG represents the entire file.
             </p>
+            <Diagram>{`A 1MB file split into 4 chunks:
+
+            Root CID: bafybeiabc...
+           /      |       \\       \\
+     Chunk 0   Chunk 1   Chunk 2   Chunk 3
+     256KB     256KB     256KB     256KB
+     CID: baf  CID: baf  CID: baf  CID: baf
+     yb01...   yb02...   yb03...   yb04...
+
+Root node contains: [link_to_chunk0, link_to_chunk1, link_to_chunk2, link_to_chunk3]
+Root CID = hash(root_node_data)
+
+Directories work the same way:
+            project/
+           /        \\
+     README.md    src/
+     CID: baf...   |
+                  index.ts
+                  CID: baf...
+
+Each directory is a DAG node linking to its children's CIDs.`}</Diagram>
+            <InsightBox>
+              <p className="text-neutral-300">
+                For our use case (metadata JSON ~1KB, files &lt;10MB), most uploads fit in a single chunk. No DAG splitting needed. But understanding the DAG model explains why IPFS can handle files of any size and why CIDs are always the same length regardless of content size.
+              </p>
+            </InsightBox>
+
+            <Sub>DHT (Distributed Hash Table) &mdash; Peer Discovery</Sub>
+            <p>
+              When you request a CID, how does IPFS find which nodes have it? The DHT is a distributed lookup table spread across all IPFS nodes. Each node is responsible for a portion of the keyspace (determined by how &quot;close&quot; their node ID is to a CID in XOR distance).
+            </p>
+            <Code>{`You request: bafybeigdyrzt5sfp7...
+
+1. Your node checks local cache — not found
+2. Your node computes XOR distance between CID and known peers
+3. Queries the closest peers: "Do you have bafybeigdyrzt5sfp7...?"
+4. Those peers either:
+   a. Have it -> return the content
+   b. Don't have it -> return peers CLOSER to the CID (iterative lookup)
+5. Repeat step 3-4 until content found or all routes exhausted
+6. Content streams back to your node, gets cached locally
+
+Lookup complexity: O(log N) where N = number of nodes in the network
+Typical lookup time: 1-5 seconds for popular content, 5-30s for rare content`}</Code>
 
             <Sub>Garbage Collection & Pinning</Sub>
             <p>
-              IPFS nodes periodically garbage-collect unpinned content. If nobody pins your data, it disappears after the cache eviction window. This is why we use Pinata &mdash; they pin our content permanently on their nodes, guaranteeing availability.
+              IPFS nodes have limited storage. They periodically garbage-collect unpinned content &mdash; data that was cached during retrieval but nobody explicitly asked to keep. If NO node in the entire network pins your data, it eventually disappears.
             </p>
+            <Diagram>{`Content lifecycle without pinning:
+  Upload -> Stored on your node -> Propagated to requesting nodes -> GC'd after cache TTL
+
+Content lifecycle WITH Pinata pinning:
+  Upload -> Pinata stores + pins -> Available via Pinata gateway (CDN) -> PERMANENT
+                                    Also discoverable via DHT by any IPFS node`}</Diagram>
+
+            <Sub>Our Caching Strategy</Sub>
+            <Code>{`// lib/ipfs.ts
+const metadataCache = new Map<string, EscrowMetadata>()    // In-memory cache
+const submissionCache = new Map<string, SubmissionMetadata>()
+
+// Fetch with 10-second timeout:
+const res = await fetch(\`https://\${GATEWAY}/ipfs/\${cid}\`, {
+  signal: AbortSignal.timeout(10_000),
+})
+
+// Cache hit -> instant return. Cache miss -> fetch from Pinata gateway.
+// Cache persists for the lifetime of the browser tab (no TTL eviction).
+// Page refresh = fresh cache = fresh data.`}</Code>
           </Section>
 
           {/* Section 13 */}
@@ -1512,6 +1670,30 @@ Compare:
                 { q: "What if someone sends extra SOL to the escrow PDA?", a: "The extra SOL stays in the PDA. Our release_funds only transfers escrow.amount, not the entire balance. The excess is effectively locked (unless we add a sweep instruction). This is a minor limitation." },
                 { q: "Why use Date.now() for escrow IDs instead of a counter?", a: "On-chain counters require a separate account with sequential updates — a bottleneck. Date.now() gives millisecond-precision timestamps that are practically unique per client. The tiny collision risk (same client, same millisecond) is caught by init's account-exists check." },
                 { q: "How does the escrow handle SOL price volatility?", a: "It doesn't — this is a known limitation. The escrow locks a specific SOL amount. If SOL drops 50% between creation and release, the freelancer gets less fiat value. Solution: support SPL tokens like USDC for price-stable escrows." },
+                { q: "Why do you use BN.js instead of native BigInt?", a: "Anchor's TypeScript SDK and @solana/web3.js were built before native BigInt had wide browser support. The BN type from bn.js is deeply integrated into Anchor's serialization/deserialization. Mixing BigInt and BN causes type errors. So we use BN consistently throughout." },
+                { q: "What if Pinata goes out of business?", a: "The IPFS CIDs are standard — any IPFS node can serve the same content. We'd migrate to another pinning service (Web3.Storage, Filebase, etc.) and re-pin the same CIDs. On-chain data is unaffected. The CIDs stored on-chain would still point to the same content on any IPFS gateway." },
+                { q: "How do you test the smart contract?", a: "Anchor provides a testing framework using Mocha/TypeScript. Tests run against a local Solana validator (solana-test-validator). Each test creates accounts, calls instructions, and asserts state changes. We test happy paths and every error condition (wrong signer, wrong status, etc.)." },
+                { q: "Why not store files directly on Solana?", a: "Solana's max account size is 10MB and rent for 10MB is ~0.07 SOL (~$10). For a 5MB PDF, that's $5 in storage alone. IPFS storage via Pinata is effectively free for our file sizes. Plus, Solana accounts are not designed for binary blob storage — they're for program state." },
+                { q: "What happens if the user's browser crashes mid-upload?", a: "If the IPFS upload completed, the file is pinned on Pinata (safe). If the on-chain transaction was signed and sent, it's in the mempool and will execute. If neither completed, no state changed — user simply retries. Each step is independently safe." },
+                { q: "How do you prevent a freelancer from submitting plagiarized work?", a: "We can't fully prevent it on-chain — that's a human judgment call. The GitHub verification checks for real code with commits (not just a fork), and the client reviews before releasing. The IPFS CID creates an immutable timestamp of exactly what was submitted." },
+                { q: "Can you add milestone-based payments?", a: "Yes, architecturally. You'd add a milestones array to the escrow account, each with an amount and status. release_funds would release per-milestone amounts. This increases account size and complexity but is technically straightforward." },
+                { q: "What's the difference between init and init_if_needed?", a: "init always creates a new account — fails if it exists. init_if_needed creates only if the account doesn't exist, otherwise uses the existing one. We use init because we always want a fresh escrow. init_if_needed would be dangerous here — it could let someone hijack an existing PDA." },
+                { q: "How do Anchor events work under the hood?", a: "emit!() writes structured data to the transaction's log output using Solana's msg!() macro with a specific format. The data is prefixed with a discriminator (SHA-256 of 'event:EventName'). Frontend can parse these from transaction logs using program.addEventListener()." },
+                { q: "Why is the freelancer field in ReleaseFunds an AccountInfo instead of Signer?", a: "The freelancer doesn't sign the release transaction — the CLIENT does. The freelancer is just the recipient of funds. Using AccountInfo (with /// CHECK comment) tells Anchor we'll verify it manually (via require!(freelancer.key() == escrow.freelancer)). The freelancer doesn't need to be online for release." },
+                { q: "What's the Anchor 'space' calculation for our escrow?", a: "8 (discriminator) + 32 (client) + 32 (freelancer) + 8 (amount) + 1 (status enum) + 8 (escrow_id) + 8 (created_at) + (4+200)(description) + (4+200)(submission_cid) + 1 (bump) = 506 bytes. Anchor's InitSpace derive macro calculates this automatically from #[max_len(200)] annotations." },
+                { q: "Why does the status enum use 1 byte, not 4?", a: "Borsh encodes enums with a 1-byte variant index (0-255). Since our EscrowStatus has only 6 variants (0-5), 1 byte is sufficient. This is more compact than Solidity's default 256-bit (32 byte) enum encoding." },
+                { q: "Can the escrow handle NFTs or other tokens?", a: "Not currently — it only handles native SOL. Supporting SPL tokens (USDC, USDT, NFTs) would require associated token accounts, token program CPIs, and modified transfer logic. The state machine and PDA design would stay the same." },
+                { q: "What if a malicious client creates an escrow with amount=1 lamport?", a: "The contract allows it (amount > 0 passes). It's economically irrational — the rent cost (~0.003 SOL) far exceeds the escrowed amount. The freelancer would see 1 lamport (~$0.00000015) and simply not accept. No harm done." },
+                { q: "How does the fetchOpenEscrows function work without a status filter?", a: "We fetch ALL program accounts (with only the discriminator filter), then filter client-side for status == 'Open'. Solana doesn't support filtering on enum values via memcmp easily because the status byte (offset 80) would need exact byte comparison. Client-side filtering is simpler and the account count is manageable." },
+                { q: "What's the risk of using 'confirmed' vs 'finalized' commitment?", a: "Confirmed has ~0.01% revert risk. In practice, this means roughly 1 in 10,000 confirmed transactions could theoretically revert during a network fork. For our use case (not handling millions of dollars per tx), this is acceptable. The user simply retries." },
+                { q: "Why does createEscrow take receiver as Pubkey::default() for open escrows?", a: "Pubkey::default() is all zeros (0x000...000). It's a sentinel value meaning 'no specific receiver'. In accept_escrow, we check: if freelancer == Pubkey::default(), anyone can accept. This avoids needing an Option<Pubkey> which would add an extra byte and complexity." },
+                { q: "How do you handle the case where getProgramAccounts returns thousands of results?", a: "We use memcmp filters to narrow results: only MY escrows (as client), or MY escrows (as freelancer). This dramatically reduces the result set. For open escrows, we fetch all and filter — but in production with thousands of escrows, we'd add pagination or indexing." },
+                { q: "What is the bs58 import used for?", a: "bs58 encodes the Escrow account discriminator bytes into Base58 format for the memcmp filter. The RPC's memcmp.bytes field expects Base58-encoded data. We compute SHA-256('account:Escrow')[0..8] and Base58-encode it to create the filter value." },
+                { q: "Could someone front-run an escrow acceptance by watching the mempool?", a: "Solana doesn't have a traditional mempool — transactions go directly to the current leader via Gulf Stream. The leader processes them FIFO. While a sophisticated attacker monitoring the leader's TPU could attempt to insert a transaction, the practical difficulty and low economic incentive (accepting a random escrow) make this a non-issue." },
+                { q: "Why do escrow accounts persist after completion?", a: "We don't have a close_escrow instruction. Closing requires zeroing the account data and transferring all remaining lamports (including rent) to a recipient. Without this, completed/cancelled escrows stay on-chain permanently. The rent (~0.003 SOL) is locked. This is a known limitation listed for future improvement." },
+                { q: "What security audit has the contract undergone?", a: "Currently none — this is a devnet project. Before mainnet deployment, we would engage a professional Solana audit firm (Neodyme, OtterSec, Halborn, etc.) to review the program. The contract is relatively simple (6 instructions, no complex math) which limits attack surface." },
+                { q: "How does the IntersectionObserver-based scroll spy on this page work?", a: "Each section has a unique ID. On mount, we create an IntersectionObserver watching all section elements with rootMargin '-20% 0px -70% 0px'. When a section enters the top 20-30% of the viewport, its entry fires as intersecting, and we update activeSection state. The TOC highlights the corresponding item." },
+                { q: "What happens to the EscrowCreated event data?", a: "Events are stored in the transaction logs on-chain permanently. Any indexer (Helius, Shyft, etc.) can parse these logs. Our frontend doesn't currently listen to events — we use direct account fetching. Events would be useful for building a notification system or activity feed." },
               ].map(({ q, a }, i) => (
                 <div key={i} className="border border-neutral-800 rounded-lg p-4">
                   <p className="text-white font-semibold mb-2">Q{i + 1}: {q}</p>
@@ -1754,6 +1936,21 @@ Compare:
                 ["Anchor Events", "On-chain logs emitted via emit!() macro. Contain structured data about what happened. Can be parsed by frontends for real-time updates."],
                 ["InitSpace", "Anchor derive macro that calculates the space needed for an account struct. Accounts for all field sizes including Borsh overhead."],
                 ["Rent", "The per-byte cost of storing data on Solana. Accounts below rent-exempt threshold are deleted. Most accounts are made rent-exempt at creation."],
+                ["Slot", "Solana's basic time unit. Each slot is ~400ms. A leader produces one block per slot. 150 slots ≈ 1 minute."],
+                ["Epoch", "A period of ~2-3 days on Solana during which a fixed set of validators is active. Leader schedule is determined per epoch."],
+                ["Validator", "A node that participates in Solana consensus. Validates transactions, votes on blocks, and earns rewards. Requires staked SOL."],
+                ["Wallet Adapter", "Solana's standard library for connecting web apps to browser wallets (Phantom, Solflare, etc.). Handles detection, connection, and signing."],
+                ["SPL Token", "Solana Program Library Token — the standard for fungible and non-fungible tokens on Solana (like ERC-20 on Ethereum). USDC, USDT are SPL tokens."],
+                ["Associated Token Account", "A deterministic token account derived from a wallet address + token mint. Ensures each wallet has exactly one account per token type."],
+                ["System Program", "Solana's built-in program (address: 11111111111111111111111111111111) that handles account creation, SOL transfers, and account allocation."],
+                ["Clock Sysvar", "A special Solana account containing the current slot, epoch, and Unix timestamp. Programs read it via Clock::get()? for time-based logic."],
+                ["Mempool", "A holding area for unconfirmed transactions. Solana's Gulf Stream mostly eliminates the mempool by forwarding txs directly to the expected leader."],
+                ["MEV (Miner Extractable Value)", "Profit extracted by reordering/inserting transactions. Common on Ethereum. Much harder on Solana due to FIFO processing and lack of traditional mempool."],
+                ["Idempotent", "An operation that produces the same result regardless of how many times it's applied. PDA creation is idempotent — same seeds always derive same address."],
+                ["Deterministic", "Always produces the same output for the same input. PDA derivation, Borsh serialization, and SHA-256 are all deterministic."],
+                ["Sentinel Value", "A special value that indicates 'none' or 'not set'. We use Pubkey::default() (all zeros) as a sentinel for 'no freelancer assigned'."],
+                ["Toast", "A small notification that briefly appears on screen. Used in our frontend to show transaction success/failure messages after escrow actions."],
+                ["Turbopack", "Next.js's Rust-based bundler (successor to Webpack). We use it in dev mode via 'next dev --turbopack' for faster hot module replacement."],
               ].map(([term, def], i) => (
                 <div key={i} className="flex gap-3 py-2 border-b border-neutral-800/50 last:border-0">
                   <span className="text-purple-400 font-mono text-sm font-semibold whitespace-nowrap shrink-0">{term}</span>
