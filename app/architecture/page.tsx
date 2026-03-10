@@ -23,10 +23,8 @@ import {
   X,
   Zap,
   Database,
-  Globe,
   FileCode,
   Server,
-  Shield,
   Cloud,
   Terminal,
   Code2,
@@ -37,12 +35,12 @@ import {
 // SECTION 1: Hero — Animated Architecture Map
 // ============================================
 
-const ARCH_NODES: Record<string, { label: string; sub: string; icon: typeof Globe; color: string }> = {
-  frontend: { label: "Next.js Frontend", sub: "User Interface",   icon: Globe,   color: "#3b82f6" },
-  helius:   { label: "Helius RPC",       sub: "Solana Gateway",   icon: Zap,     color: "#f97316" },
-  program:  { label: "Solana Program",   sub: "Smart Contract",   icon: Shield,  color: "#a855f7" },
-  pinata:   { label: "Pinata IPFS",      sub: "Off-chain Storage", icon: Cloud,   color: "#ec4899" },
-  receiver: { label: "Receiver SDK",     sub: "Integration Layer", icon: Package, color: "#22c55e" },
+const ARCH_NODES: Record<string, { label: string; sub: string; logo: string; color: string }> = {
+  frontend: { label: "Next.js Frontend", sub: "User Interface",    logo: "/logos/nextjs.svg",       color: "#3b82f6" },
+  helius:   { label: "Helius RPC",       sub: "Solana Gateway",    logo: "/logos/helius.svg",       color: "#f97316" },
+  program:  { label: "Solana Program",   sub: "Smart Contract",    logo: "/logos/solana.svg",       color: "#a855f7" },
+  pinata:   { label: "Pinata IPFS",      sub: "Off-chain Storage", logo: "/logos/pinata.svg",       color: "#ec4899" },
+  receiver: { label: "Receiver SDK",     sub: "Integration Layer", logo: "/logos/trustify-sdk.svg", color: "#22c55e" },
 }
 
 const ARCH_EDGES = [
@@ -100,7 +98,6 @@ function ArchitectureDiagram() {
 
   const NodeCard = ({ id, delay }: { id: string; delay: number }) => {
     const node = ARCH_NODES[id]
-    const Icon = node.icon
     return (
       <motion.div
         className="flex flex-col items-center gap-3 relative z-10"
@@ -117,7 +114,7 @@ function ArchitectureDiagram() {
             boxShadow: `0 0 30px ${node.color}25, inset 0 0 20px ${node.color}08`,
           }}
         >
-          <Icon className="w-4 h-4 md:w-5 md:h-5" style={{ color: node.color }} />
+          <Image src={node.logo} alt={node.label} width={24} height={24} className="w-5 h-5 md:w-6 md:h-6" />
         </div>
         <div className="text-center">
           <div className="text-sm md:text-base font-semibold" style={{ color: node.color }}>{node.label}</div>
@@ -623,7 +620,7 @@ function PinataVisualization() {
           initial={{ opacity: 0, x: 30 }}
           animate={isInView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex-[2] rounded-2xl lg:rounded-l-none border border-white/10 bg-[#0c0c0e] overflow-hidden overflow-x-auto"
+          className="flex-[2] min-w-0 rounded-2xl lg:rounded-l-none border border-white/10 bg-[#0c0c0e] overflow-hidden"
         >
           <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
             <div className="flex gap-1.5">
@@ -863,7 +860,7 @@ export default function Checkout() {
               </span>
               <span>
                 {line.parts.map((part, j) => (
-                  <span key={j} style={{ color: part.color, whiteSpace: "pre" }}>
+                  <span key={j} style={{ color: part.color, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                     {part.text}
                   </span>
                 ))}
@@ -916,7 +913,7 @@ export default function ArchitecturePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white">
+    <div className="min-h-screen bg-[#09090b] text-white overflow-x-hidden">
       {/* Background effects */}
       <div className="fixed inset-0 z-0 bg-gradient-to-b from-neutral-900/30 via-transparent to-transparent pointer-events-none" />
 
@@ -1068,7 +1065,7 @@ export default function ArchitecturePage() {
       {/* ===== SECTION 6: CTA ===== */}
       <Section>
         <div className="relative rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-transparent p-12 md:p-20 overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-radial from-purple-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[600px] h-[300px] bg-gradient-radial from-purple-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
 
           <div className="relative text-center max-w-2xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5">

@@ -3,7 +3,7 @@ import { Program, AnchorProvider, BN, BorshAccountsCoder, type Wallet as AnchorW
 import bs58 from "bs58"
 import type { WalletContextState } from "@solana/wallet-adapter-react"
 import idl from "../idl/trustify.json"
-import { extractCid, fetchMetadata, type EscrowMetadata } from "./ipfs"
+import { extractCid, fetchMetadata, type EscrowMetadata, type SubmissionMetadata } from "./ipfs"
 
 // ============================================
 // CONSTANTS
@@ -46,6 +46,7 @@ export interface EscrowAccount {
   submissionCid: string
   bump: number
   metadata?: EscrowMetadata
+  submissionMetadata?: SubmissionMetadata
 }
 
 export interface TransactionResult {
