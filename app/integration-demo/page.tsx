@@ -246,10 +246,7 @@ function ProductCard({ name, price }) {
         description={\`Purchase: \${name}\`}
         onSuccess={(signature) => {
           // Handle successful escrow creation
-          console.log("Escrow created:", signature)
-        }}
-        onError={(error) => {
-          console.error("Payment failed:", error)
+          // escrow created
         }}
       />
     </div>

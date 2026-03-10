@@ -14,7 +14,7 @@ const getProgramId = () => {
   if (!_programId) _programId = new PublicKey(idl.metadata.address)
   return _programId
 }
-const NETWORK = "https://devnet.helius-rpc.com/?api-key=0d877281-6ed1-4d0c-94d0-aa2d396aee2e"
+const NETWORK = process.env.NEXT_PUBLIC_HELIUS_RPC_URL || "https://api.devnet.solana.com"
 const ESCROW_SEED = "escrow"
 let _defaultPubkey: PublicKey | null = null
 const getDefaultPubkey = () => {
@@ -410,7 +410,7 @@ export const fetchEscrow = async (
     const account = await program.account.escrow.fetch(escrowPubkey)
     return safeMapEscrow(escrowPubkey, account)
   } catch (e) {
-    console.error("Error fetching escrow:", e)
+    // silently fail
     return null
   }
 }
