@@ -43,6 +43,7 @@ import {
 interface EscrowCardProps {
   escrow: EscrowAccount
   onAction?: () => void
+  onViewDetails?: () => void
 }
 
 interface VerificationResult {
@@ -85,7 +86,7 @@ function DeadlineBadge({ deadline }: { deadline: string }) {
   )
 }
 
-export function EscrowCard({ escrow, onAction }: EscrowCardProps) {
+export function EscrowCard({ escrow, onAction, onViewDetails }: EscrowCardProps) {
   const wallet = useWallet()
   const [loading, setLoading] = useState("")
   const [error, setError] = useState("")
@@ -596,6 +597,17 @@ export function EscrowCard({ escrow, onAction }: EscrowCardProps) {
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2 pt-1">
+        {escrow.status === "Open" && !isClient && onViewDetails && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onViewDetails}
+            className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white gap-1.5"
+          >
+            <Eye className="w-4 h-4" />
+            View Details
+          </Button>
+        )}
         {escrow.status === "Open" && !isClient && (
           <Button
             size="sm"

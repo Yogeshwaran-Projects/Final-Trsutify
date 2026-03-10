@@ -6,6 +6,7 @@ import {
   fetchClientEscrows,
   fetchFreelancerEscrows,
   fetchOpenEscrows,
+  acceptEscrow,
   lamportsToSol,
   type EscrowAccount,
   type EscrowStatus,
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { DashboardHeader } from "@/components/DashboardHeader"
 import { CreateEscrowForm } from "@/components/CreateEscrowForm"
 import { EscrowCard } from "@/components/EscrowCard"
+import { EscrowDetailDialog } from "@/components/EscrowDetailDialog"
 import { SolAmount } from "@/components/SolAmount"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -41,6 +43,8 @@ export default function DashboardPage() {
   const [openEscrows, setOpenEscrows] = useState<EscrowAccount[]>([])
   const [loading, setLoading] = useState(false)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
+  const [detailEscrow, setDetailEscrow] = useState<EscrowAccount | null>(null)
+  const [accepting, setAccepting] = useState(false)
 
   // Resolve metadata for all escrows
   const allRaw = [...clientEscrows, ...freelancerEscrows, ...openEscrows]
@@ -81,6 +85,20 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchAll()
   }, [fetchAll])
+
+  const handleAcceptFromDialog = async () => {
+    if (!detailEscrow) return
+    setAccepting(true)
+    try {
+      await acceptEscrow(wallet, detailEscrow.publicKey.toBase58())
+      setDetailEscrow(null)
+      fetchAll()
+    } catch {
+      // error handled at card level
+    } finally {
+      setAccepting(false)
+    }
+  }
 
   // Stats
   const totalSent = rClientEscrows.reduce(
@@ -174,7 +192,7 @@ export default function DashboardPage() {
               className={
                 isMobile
                   ? "w-full grid grid-cols-4 bg-neutral-900 border border-neutral-800 h-auto p-1"
-                  : "flex flex-col h-fit w-56 shrink-0 bg-neutral-900 border border-neutral-800 p-2 rounded-xl gap-1"
+                  : "flex flex-col h-fit w-56 shrink-0 bg-neutral-900 border border-neutral-800 p-2 rounded-xl gap-1 sticky top-8 self-start"
               }
             >
               <TabsTrigger
@@ -321,6 +339,7 @@ export default function DashboardPage() {
                         key={e.publicKey.toBase58()}
                         escrow={e}
                         onAction={fetchAll}
+                        onViewDetails={() => setDetailEscrow(e)}
                       />
                     ))}
                   </div>
@@ -338,6 +357,7 @@ export default function DashboardPage() {
                         key={e.publicKey.toBase58()}
                         escrow={e}
                         onAction={fetchAll}
+                        onViewDetails={() => setDetailEscrow(e)}
                       />
                     ))
                   )}
@@ -409,6 +429,13 @@ export default function DashboardPage() {
           </Tabs>
         </div>
       </div>
+
+      <EscrowDetailDialog
+        escrow={detailEscrow}
+        onClose={() => setDetailEscrow(null)}
+        onAccept={handleAcceptFromDialog}
+        accepting={accepting}
+      />
     </div>
   )
 }
