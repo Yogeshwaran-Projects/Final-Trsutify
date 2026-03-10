@@ -748,7 +748,7 @@ export default function DemoPage() {
 
           <div
             ref={terminalRef}
-            className="bg-neutral-950 border border-neutral-800 rounded-xl p-6 font-mono text-sm h-[400px] overflow-y-auto"
+            className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 sm:p-6 font-mono text-xs sm:text-sm h-[400px] overflow-y-auto overflow-x-hidden break-all"
           >
             {terminalLines.map((line, i) => (
               <div key={i} className={`${
@@ -778,7 +778,7 @@ export default function DemoPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
+    <div className="min-h-screen bg-neutral-950 text-white overflow-x-hidden">
       {/* Header */}
       <header className="border-b border-neutral-800 bg-neutral-950 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 py-4">
@@ -803,11 +803,11 @@ export default function DemoPage() {
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Progress */}
         <div className="mb-10">
-          <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex items-center justify-between max-w-2xl mx-auto px-2 overflow-x-auto">
             {steps.map((step, i) => (
               <div key={i} className="flex items-center">
                 <div className="flex flex-col items-center">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                  <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all ${
                     currentStep > i ? "bg-green-500 text-white" :
                     currentStep === i ? step.actor === "client" ? "bg-blue-500 text-white" : "bg-emerald-500 text-white" :
                     "bg-neutral-800 text-neutral-500"
@@ -822,7 +822,7 @@ export default function DemoPage() {
                   </p>
                 </div>
                 {i < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-3 mt-[-24px] ${currentStep > i ? "bg-green-500" : "bg-neutral-800"}`} />
+                  <div className={`w-6 sm:w-16 h-0.5 mx-1 sm:mx-3 mt-[-24px] ${currentStep > i ? "bg-green-500" : "bg-neutral-800"}`} />
                 )}
               </div>
             ))}

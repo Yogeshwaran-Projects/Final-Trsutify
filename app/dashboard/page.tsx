@@ -113,10 +113,20 @@ export default function DashboardPage() {
     myEscrows = myEscrows.filter((e) => e.status === statusFilter)
   }
 
-  // Receive tab: open escrows not created by current user
-  const receivableEscrows = rOpenEscrows.filter(
-    (e) => e.client.toBase58() !== wallet.publicKey?.toBase58()
-  )
+  // Receive tab: open escrows not created by current user, filtered by whitelist/blocklist
+  const myWallet = wallet.publicKey?.toBase58() ?? ""
+  const receivableEscrows = rOpenEscrows.filter((e) => {
+    if (e.client.toBase58() === myWallet) return false
+    // Whitelist check: if escrow has a whitelist and wallet not in it, hide
+    if (e.metadata?.whitelist && e.metadata.whitelist.length > 0) {
+      if (!e.metadata.whitelist.includes(myWallet)) return false
+    }
+    // Blocklist check: if escrow has a blocklist and wallet is in it, hide
+    if (e.metadata?.blocklist && e.metadata.blocklist.length > 0) {
+      if (e.metadata.blocklist.includes(myWallet)) return false
+    }
+    return true
+  })
   // Also escrows directed to this user
   const directedToMe = rOpenEscrows.filter(
     (e) =>
@@ -293,6 +303,9 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-neutral-400">
                   Browse available escrows and accept work to receive payment. Click on an escrow to see full details before accepting.
+                </p>
+                <p className="text-xs text-neutral-500 italic">
+                  Some escrows may be restricted to specific wallets and won&apos;t appear here.
                 </p>
 
                 {directedToMe.length > 0 && (

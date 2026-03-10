@@ -10,6 +10,27 @@ export interface EscrowMetadata {
   title: string
   description: string
   files: EscrowFileRef[]
+  // v2 fields (optional for backwards compat)
+  deadline?: string           // ISO date string, informational only
+  receiverMode?: "open" | "directed"
+  whitelist?: string[]        // wallet addresses allowed to accept
+  blocklist?: string[]        // wallet addresses blocked from accepting
+  techstack?: string[]        // e.g. ["React", "Node.js", "Rust"]
+  requirements?: string[]     // checklist items the freelancer must satisfy
+}
+
+export interface SubmissionMetadata {
+  version: number
+  files: EscrowFileRef[]
+  githubUrl?: string
+  checklistCompleted?: boolean[]  // parallel array to escrow requirements
+  verification?: {
+    verified: boolean
+    techstackMatch: string[]
+    hasCode: boolean
+    commitCount: number
+    languages: Record<string, number>
+  }
 }
 
 const GATEWAY =
@@ -18,6 +39,7 @@ const GATEWAY =
     : (process.env.NEXT_PUBLIC_PINATA_GATEWAY ?? "gateway.pinata.cloud")
 
 const metadataCache = new Map<string, EscrowMetadata>()
+const submissionCache = new Map<string, SubmissionMetadata>()
 
 export function isIpfsCid(value: string): boolean {
   if (!value) return false
@@ -48,6 +70,27 @@ export async function fetchMetadata(
     if (data.version && data.title) {
       metadataCache.set(cid, data as EscrowMetadata)
       return data as EscrowMetadata
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+export async function fetchSubmissionMetadata(
+  cid: string
+): Promise<SubmissionMetadata | null> {
+  if (submissionCache.has(cid)) return submissionCache.get(cid)!
+
+  try {
+    const res = await fetch(`https://${GATEWAY}/ipfs/${cid}`, {
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (data.version && data.files) {
+      submissionCache.set(cid, data as SubmissionMetadata)
+      return data as SubmissionMetadata
     }
     return null
   } catch {
